@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nova - Relationship Intelligence</title>
+    <style>
+        :root {
+            --bg-main: #0a0c14; --bg-panel: #141724; --bg-input: #1e2235; --border-color: #2b304a;
+            --text-main: #f3f4f6; --text-muted: #9ca3af; --accent-gold: #ffd32a; --success: #2ed573; --alert: #ff4757; --premium: #9b59b6;
+            --shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent;}
+        body { background-color: var(--bg-main); color: var(--text-main); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; overflow: hidden; }
+        .wrapper { width: 100%; max-width: 480px; height: 100vh; display: flex; flex-direction: column; position: relative; background: var(--bg-main); }
+        
+        /* --- MOBİL İÇİN TAM GÖRÜNÜR, KAYDIRMASIZ 3x2 IZGARA MENÜ --- */
+        .top-nav { display: flex; flex-direction: column; align-items: center; padding: 15px 10px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); width: 100%; gap: 10px; }
+        .nav-logo { font-size: 22px; font-weight: 900; color: var(--accent-gold); letter-spacing: 2px; }
+        .nav-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; }
+        .nav-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-muted); padding: 10px 4px; border-radius: 8px; font-size: 11px; text-align: center; cursor: pointer; font-weight: bold; white-space: nowrap; transition: all 0.2s; }
+        .nav-btn.active { color: var(--accent-gold); border-color: var(--accent-gold); background: rgba(255, 211, 42, 0.1); }
+        
+        .main-content { flex-grow: 1; padding: 20px; overflow-y: auto; padding-bottom: 30px; }
+        .hidden { display: none !important; }
+        
+        .panel { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 20px; border-radius: 18px; box-shadow: var(--shadow); width: 100%; text-align: center; }
+        h2 { font-size: 18px; margin-bottom: 15px; color: var(--text-main); text-align: left; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
+        
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 12px; color: var(--text-muted); font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; color: white; outline: none; font-size: 13px; }
+        .slider-wrapper { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+        .slider-wrapper input[type="range"] { flex-grow: 1; accent-color: var(--accent-gold); }
+        .redflag-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--alert); font-weight: bold; }
+        
+        .btn-master { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent-gold), #e1b12c); border: none; color: #0a0c14; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 211, 42, 0.2); transition: 0.2s;}
+        .btn-master:active { transform: scale(0.98); }
+        .btn-premium { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3); margin-top: 15px; border: 1px solid #c39bd3;}
+        
+        .date-card { background: var(--bg-input); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .date-info { text-align: left; }
+        .date-name { font-size: 15px; font-weight: bold; color: white; }
+        .date-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+        .date-score-badge { padding: 8px 12px; border-radius: 10px; font-weight: 900; font-size: 13px; background: rgba(46, 213, 115, 0.1); color: var(--success); border: 1px solid rgba(46, 213, 115, 0.3); cursor: pointer; }
+        .date-score-badge.low-score { background: rgba(255, 71, 87, 0.1); color: var(--alert); border-color: rgba(255, 71, 87, 0.3); }
+
+        #analysisReportLayer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-main); z-index: 99999; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
+        #analysisReportLayer.active { display: flex !important; }
+        .report-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
+        .report-score-box { text-align: center; padding: 20px; background: var(--bg-panel); border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 20px; }
+        .report-score-val { font-size: 48px; font-weight: 900; color: var(--success); }
+        .report-section { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; margin-bottom: 15px; text-align: left; }
+        .report-section h4 { font-size: 12px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
+        .report-list-item { font-size: 13px; margin-bottom: 8px; padding-left: 12px; position: relative; }
+        .report-list-item::before { content: "•"; position: absolute; left: 0; color: var(--accent-gold); }
+        .flag-red { color: var(--alert); font-weight: bold; }
+        .flag-green { color: var(--success); font-weight: bold; }
+        
+        .chat-box { height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding-right: 5px; }
+        .chat-msg { max-width: 85%; padding: 12px; border-radius: 14px; font-size: 13px; line-height: 1.4; }
+        .chat-user { align-self: flex-end; background: var(--accent-gold); color: #0a0c14; font-weight: 500; border-bottom-right-radius: 2px; }
+        .chat-nova { align-self: flex-start; background: var(--bg-panel); color: white; border: 1px solid var(--border-color); border-bottom-left-radius: 2px; }
+
+        .journal-card { background: var(--bg-panel); border-left: 3px solid var(--accent-gold); padding: 12px; margin-bottom: 10px; border-radius: 8px; text-align: left; font-size: 12px;}
+        .journal-date { font-size: 10px; color: var(--text-muted); margin-bottom: 5px; }
+
+        /* --- ONBOARDING WIZARD STYLES --- */
+        #onboardingLayer { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            background: var(--bg-main); z-index: 999999; display: none; 
+            flex-direction: column; justify-content: center; align-items: center; padding: 20px; 
+        }
+        #onboardingLayer.active { display: flex !important; }
+        .wizard-panel {
+            background: var(--bg-panel); border: 1px solid var(--border-color); 
+            padding: 30px 20px; border-radius: 18px; box-shadow: var(--shadow); 
+            width: 100%; max-width: 400px; text-align: center;
+        }
+        .wizard-step { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .wizard-step.active { display: block; }
+        .wizard-header { font-size: 20px; font-weight: 900; color: var(--accent-gold); margin-bottom: 10px; }
+        .wizard-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; }
+        .wizard-nav { display: flex; justify-content: space-between; margin-top: 25px; gap: 10px; }
+        .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); padding: 12px; border-radius: 10px; flex: 1; cursor: pointer; font-weight: bold; }
+        .btn-next { background: var(--accent-gold); border: none; color: #0a0c14; padding: 12px; border-radius: 10px; flex: 1; cursor: pointer; font-weight: bold; }
+        .progress-container { width: 100%; background: var(--bg-input); height: 6px; border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--accent-gold); width: 25%; transition: width 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <!-- ONBOARDING (CV OLUŞTURMA SİHİRBAZI) -->
+    <div id="onboardingLayer">
+        <div class="wizard-panel">
+            <div class="progress-container"><div class="progress-bar" id="wizardProgress"></div></div>
+            <form id="wizardForm">
+                <!-- Adım 1: Karşılama -->
+                <div class="wizard-step active" id="step1">
+                    <div class="wizard-header">Nova'ya Hoş Geldin</div>
+                    <div class="wizard-desc">Sana doğru teşhisleri koyabilmemiz için öncelikle kendi iç dünyanı ve sınırlarını algoritmamıza tanıtman gerekiyor. Bu, senin dijital "İlişki CV'n" olacak.</div>
+                    <button type="button" class="btn-next" onclick="nextStep(2)" style="width: 100%;">CV'mi Oluşturmaya Başla</button>
+                </div>
+
+                <!-- Adım 2: Değerler -->
+                <div class="wizard-step" id="step2">
+                    <div class="wizard-header">Temel Değerler</div>
+                    <div class="wizard-desc">Finansal tutumlar ve aile planlaması uzun vadeli uyumun temelidir. Beklentilerini belirle.</div>
+                    <div class="form-group">
+                        <label>Finansal Tutum Beklentisi</label>
+                        <select id="wz_finance"><option value="Birikim Odaklı">Birikim Odaklı</option><option value="Dengeli">Dengeli</option><option value="Savurgan">Farketmez</option></select>
+                        <div class="slider-wrapper"><input type="range" id="wz_w_finance" min="0" max="100" value="50"><span id="lbl_wz_w_finance" style="font-size:11px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
+                        <label class="redflag-wrapper"><input type="checkbox" id="wz_rf_finance"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Çocuk İsteği</label>
+                        <select id="wz_child"><option value="İstiyor">İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Kararsız</option></select>
+                        <div class="slider-wrapper"><input type="range" id="wz_w_child" min="0" max="100" value="50"><span id="lbl_wz_w_child" style="font-size:11px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
+                        <label class="redflag-wrapper"><input type="checkbox" id="wz_rf_child"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                    </div>
+                    <div class="wizard-nav">
+                        <button type="button" class="btn-outline" onclick="nextStep(1)">Geri</button>
+                        <button type="button" class="btn-next" onclick="nextStep(3)">Sonraki Adım</button>
+                    </div>
+                </div>
+
+                <!-- Adım 3: Yaşam Tarzı -->
+                <div class="wizard-step" id="step3">
+                    <div class="wizard-header">Yaşam Tarzı</div>
+                    <div class="wizard-desc">Sosyal dinamikler ve günlük alışkanlıklar. Kırmızı çizgilerini dürüstçe işaretle.</div>
+                    <div class="form-group">
+                        <label>Mizah Anlayışı</label>
+                        <select id="wz_humor"><option value="Yüksek">Yüksek</option><option value="Orta">Orta</option><option value="Düşük">Önemli Değil</option></select>
+                        <div class="slider-wrapper"><input type="range" id="wz_w_humor" min="0" max="100" value="50"><span id="lbl_wz_w_humor" style="font-size:11px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
+                        <label class="redflag-wrapper"><input type="checkbox" id="wz_rf_humor"> 🚨 Bu kırmızı çizgimdir</label>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Zararlı Alışkanlıklar</label>
+                        <select id="wz_habit"><option value="Kullanmıyor">Kullanmıyor</option><option value="Sosyal İçici">Sosyal İçici</option><option value="Kullanıyor">Sorun Değil</option></select>
+                        <div class="slider-wrapper"><input type="range" id="wz_w_habit" min="0" max="100" value="50"><span id="lbl_wz_w_habit" style="font-size:11px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
+                        <label class="redflag-wrapper"><input type="checkbox" id="wz_rf_habit"> 🚨 Bu kırmızı çizgimdir</label>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>İletişim Sıklığı</label>
+                        <select id="wz_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select>
+                        <div class="slider-wrapper"><input type="range" id="wz_w_communication" min="0" max="100" value="50"><span id="lbl_wz_w_communication" style="font-size:11px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
+                        <label class="redflag-wrapper"><input type="checkbox" id="wz_rf_communication"> 🚨 Bu kırmızı çizgimdir</label>
+                    </div>
+                    <div class="wizard-nav">
+                        <button type="button" class="btn-outline" onclick="nextStep(2)">Geri</button>
+                        <button type="button" class="btn-next" onclick="finishOnboarding()">Profili Kaydet</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <div id="topNav" class="top-nav hidden">
+            <div class="nav-logo">NOVA</div>
+            <div class="nav-tabs">
+                <button id="tabCvBtn" class="nav-btn" onclick="switchTab('cv')">📋 CV'm</button>
+                <button id="tabDashboardBtn" class="nav-btn" onclick="switchTab('dashboard')">👤 Date'lerim</button>
+                <button id="tabCoachBtn" class="nav-btn" onclick="switchTab('coach')">🤖 Koçluk</button>
+                <button id="tabJournalBtn" class="nav-btn" onclick="switchTab('journal')">📝 Günlük</button>
+                <button id="tabTrendsBtn" class="nav-btn" onclick="switchTab('trends')">📈 Trendler</button>
+                <button id="tabCoupleBtn" class="nav-btn" style="color:var(--premium); border-color:var(--premium);" onclick="switchTab('couple')">💑 Çift</button>
+            </div>
+        </div>
+
+        <!-- AUTH PANEL -->
+        <div id="authPanel" class="main-content">
+            <div class="panel" style="margin-top: 50px;">
+                <h1 style="font-size: 28px; font-weight: 900; color: var(--accent-gold); margin-bottom: 5px;">NOVA</h1>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 25px;">Relationship Intelligence Laboratory</p>
+                
+                <form id="loginForm">
+                    <div class="form-group"><label>E-posta</label><input type="email" id="logEmail" required></div>
+                    <div class="form-group"><label>Şifre</label><input type="password" id="logPassword" required></div>
+                    <button type="submit" class="btn-master">Giriş Yap ve Analiz Et</button>
+                    <div style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">
+                        Laboratuvara katılmadın mı? <a href="#" onclick="toggleForms()" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">Kayıt Ol</a>
+                    </div>
+                </form>
+
+                <form id="registerForm" class="hidden">
+                    <div class="form-group"><label>Görünen İsim (Kod Adı)</label><input type="text" id="regName" required></div>
+                    <div class="form-group"><label>E-posta</label><input type="email" id="regEmail" required></div>
+                    <div class="form-group"><label>Şifre</label><input type="password" id="regPassword" required></div>
+                    <button type="submit" class="btn-master">Sisteme Kayıt Ol</button>
+                    <div style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">
+                        Hesabın var mı? <a href="#" onclick="toggleForms()" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">Giriş Yap</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 1: RELATIONSHIP CV -->
+        <div id="cvPanel" class="main-content hidden">
+            <h2 style="margin-bottom: 20px;">İlişki CV'm <span style="font-size:11px; color:var(--text-muted); font-weight:normal;">(Gizli Kriterler)</span></h2>
+            <form id="cvForm">
+                <div class="form-group">
+                    <label>Mizah Anlayışı Beklentisi</label>
+                    <select id="cv_humor"><option value="Yüksek">Yüksek</option><option value="Orta">Orta</option><option value="Düşük">Önemli Değil</option></select>
+                    <div class="slider-wrapper"><input type="range" id="w_humor" min="0" max="100" value="50"><span id="lbl_w_humor" style="font-size:11px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
+                    <label class="redflag-wrapper"><input type="checkbox" id="rf_humor"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                </div>
+                <div class="form-group">
+                    <label>Finansal Tutum</label>
+                    <select id="cv_finance"><option value="Birikim Odaklı">Birikim Odaklı</option><option value="Dengeli">Dengeli</option><option value="Savurgan">Farketmez</option></select>
+                    <div class="slider-wrapper"><input type="range" id="w_finance" min="0" max="100" value="50"><span id="lbl_w_finance" style="font-size:11px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
+                    <label class="redflag-wrapper"><input type="checkbox" id="rf_finance"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                </div>
+                <div class="form-group">
+                    <label>Çocuk İsteyi</label>
+                    <select id="cv_child"><option value="İstiyor">İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Kararsız</option></select>
+                    <div class="slider-wrapper"><input type="range" id="w_child" min="0" max="100" value="50"><span id="lbl_w_child" style="font-size:11px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
+                    <label class="redflag-wrapper"><input type="checkbox" id="rf_child"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                </div>
+                <div class="form-group">
+                    <label>İletişim Sıklığı</label>
+                    <select id="cv_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select>
+                    <div class="slider-wrapper"><input type="range" id="w_communication" min="0" max="100" value="50"><span id="lbl_w_communication" style="font-size:11px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
+                    <label class="redflag-wrapper"><input type="checkbox" id="rf_communication"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                </div>
+                <div class="form-group">
+                    <label>Zararlı Alışkanlıklar</label>
+                    <select id="cv_habit"><option value="Kullanmıyor">Kullanmıyor</option><option value="Sosyal İçici">Sosyal İçici</option><option value="Kullanıyor">Sorun Değil</option></select>
+                    <div class="slider-wrapper"><input type="range" id="w_habit" min="0" max="100" value="50"><span id="lbl_w_habit" style="font-size:11px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
+                    <label class="redflag-wrapper"><input type="checkbox" id="rf_habit"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                </div>
+                <button type="submit" class="btn-master" style="margin-top:10px;">CV Ağırlıklarını Kaydet</button>
+            </form>
+        </div>
+
+        <!-- TAB 2: DASHBOARD / DATE LIST & ADD -->
+        <div id="dashboardPanel" class="main-content hidden">
+            <h2>Date Laboratuvarı <button class="nav-btn" style="border-color:var(--accent-gold); color:var(--accent-gold);" onclick="toggleAddDateForm()">[+] Yeni Ekle</button></h2>
+            
+            <div id="addDateBox" class="panel hidden" style="text-align:left; margin-bottom:20px; border-color:var(--accent-gold);">
+                <h3 style="font-size:15px; margin-bottom:15px; color:white;">Yeni Gözlem Profili Girişi</h3>
+                <form id="addDateForm">
+                    <div class="form-group"><label>Aday İsmi / Kod Adı</label><input type="text" id="d_name" required></div>
+                    <div class="form-group"><label>Yaşı & Mesleği</label><input type="text" id="d_job" placeholder="Örn: 22, Bilgisayar Müh."></div>
+                    <div class="form-divider" style="border-bottom:1px solid var(--border-color); margin:15px 0;"></div>
+                    <div class="form-group"><label>Mizah Seviyesi</label><select id="attr_humor"><option value="Yüksek">Yüksek</option><option value="Orta">Orta</option><option value="Düşük">Düşük</option></select></div>
+                    <div class="form-group"><label>Finansal Davranışı</label><select id="attr_finance"><option value="Birikim Odaklı">Birikim Odaklı</option><option value="Dengeli">Dengeli</option><option value="Savurgan">Savurgan</option></select></div>
+                    <div class="form-group"><label>Çocuk Yaklaşımı</label><select id="attr_child"><option value="İstiyor">İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Kararsız</option></select></div>
+                    <div class="form-group"><label>İletişim Tarzı</label><select id="attr_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select></div>
+                    <div class="form-group"><label>Zararlı Alışkanlık</label><select id="attr_habit"><option value="Kullanmıyor">Kullanmıyor</option><option value="Sosyal İçici">Sosyal İçici</option><option value="Kullanıyor">Kullanıyor</option></select></div>
+                    <div class="form-group"><label>İlk Buluşma Notları</label><textarea id="d_notes" rows="2"></textarea></div>
+                    <button type="submit" class="btn-master">Kaydet ve Algoritmayı Çalıştır</button>
+                </form>
+            </div>
+            <div id="datesContainer"></div>
+        </div>
+
+        <!-- TAB 3: RELATIONSHIP JOURNAL (PREMIUM VİZYONU) -->
+        <div id="journalPanel" class="main-content hidden">
+            <h2>İlişki Günlüğü <span style="font-size:10px; color:var(--premium);">💎 Premium Analiz</span></h2>
+            <p style="font-size:11px; color:var(--text-muted); margin-bottom:15px;">Buluşmalar sonrası kendi hislerini buraya not et. Sistem zamanla duygusal değişim trendlerini haritalandıracaktır.</p>
+            <div class="form-group">
+                <textarea id="journalInput" rows="3" placeholder="Bugün buluşmada hissettiğim şey..."></textarea>
+                <button class="btn-master" style="padding: 10px;" onclick="saveJournal()">Günlüğe Kaydet</button>
+            </div>
+            <div id="journalList" style="margin-top: 20px;"></div>
+        </div>
+
+        <!-- TAB 4: NOVA COACHING CHAT -->
+        <div id="coachPanel" class="main-content hidden">
+            <h2>Nova Karar Destek Asistanı</h2>
+            <p style="font-size:11px; color:var(--text-muted); margin-bottom:15px;">Daha önce sorduğunuz ikilemler ve senaryo geçmişi aşağıda arşivlenmektedir.</p>
+            <div class="chat-box" id="coachingChatBox"></div>
+            <div class="chat-input-area" style="display:flex; gap:8px;">
+                <input type="text" id="coachInput" class="chat-input" style="flex-grow:1; background:var(--bg-panel); border:1px solid var(--border-color); border-radius:10px; padding:12px; color:white; outline:none;" placeholder="Senaryoyu girin...">
+                <button class="btn-send" style="background:var(--accent-gold); border:none; width:45px; height:45px; border-radius:10px; cursor:pointer;" onclick="sendCoachingMsg()">➤</button>
+            </div>
+        </div>
+
+        <!-- TAB 5: TRENDS -->
+        <div id="trendsPanel" class="main-content hidden">
+            <h2>Kişisel Farkındalık Trendleri</h2>
+            <div class="panel" style="text-align:left; margin-top:15px;">
+                <p style="font-size:14px; margin-bottom:15px;">Veri Havuzu: <span id="trend_total" style="font-weight:bold; color:white;">0</span> Aday</p>
+                <div class="report-section" style="background: var(--bg-input);">
+                    <h4>🤖 Nova Makro Analiz Notu</h4>
+                    <p id="trend_macro_text" style="font-size:13px; line-height:1.5; color:var(--text-main);"></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 6: COUPLE ANALYSIS -->
+        <div id="couplePanel" class="main-content hidden">
+            <h2>Çift Laboratuvarı <span style="font-size:10px; color:var(--premium);">💎 Premium</span></h2>
+            <p style="font-size:11px; color:var(--text-muted); margin-bottom:15px;">Senin laboratuvardaki CV'n ile, partnerinin beklentilerini çapraz analize sok.</p>
+            
+            <div class="panel" style="text-align:left;">
+                <div class="form-group">
+                    <label>Partnerinin Finansal Beklentisi</label>
+                    <select id="cp_finance"><option value="Birikim Odaklı">Birikim Odaklı</option><option value="Dengeli">Dengeli</option><option value="Savurgan">Savurgan</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Partnerinin Çocuk İsteği</label>
+                    <select id="cp_child"><option value="İstiyor">İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Kararsız</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Partnerinin İletişim Beklentisi</label>
+                    <select id="cp_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select>
+                </div>
+                <button class="btn-master btn-premium" onclick="runCoupleAnalysis()">Çapraz Analizi Başlat</button>
+            </div>
+            
+            <div id="coupleReportResult" class="panel hidden" style="margin-top:15px; border-color:var(--premium); text-align:left;">
+                <h4 style="color:var(--premium); margin-bottom:10px; font-size:13px;">🤖 Nova Çift Teşhisi</h4>
+                <p id="coupleReportText" style="font-size:13px; line-height:1.5; color:white;"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- GLOBAL ANALİZ RAPORU -->
+    <div id="analysisReportLayer">
+        <div class="report-header">
+            <h3 id="repName" style="font-size:20px; font-weight:900; color:white;">Analiz Raporu</h3>
+            <button class="nav-btn" style="border-color:var(--text-muted); color:var(--text-muted);" onclick="closeReportLayer()">✕ Kapat</button>
+        </div>
+        
+        <div class="report-score-box">
+            <h4>Nesnel Uyum Endeksi</h4>
+            <div class="report-score-val" id="repScore">%0</div>
+        </div>
+
+        <div class="report-section">
+            <h4>🤖 Nova Stratejik Teşhis</h4>
+            <p id="repNovaMessage" style="font-size:13px; line-height:1.5; color:white;"></p>
+        </div>
+
+        <div id="repCriticalSection" class="report-section hidden" style="border-color:var(--alert); background:rgba(255,71,87,0.05);">
+            <h4 style="color:var(--alert);">🚨 Kritik Uyuşmazlıklar (Kırmızı Çizgiler)</h4>
+            <div id="repCriticalList"></div>
+        </div>
+
+        <div class="report-section">
+            <h4 style="color:var(--success);">✅ Güçlü Yönler (Green Flags)</h4>
+            <div id="repProsList"></div>
+        </div>
+
+        <div class="report-section">
+            <h4 style="color:var(--text-muted);">⚠️ Risk Değerlendirmeleri (Eksiler)</h4>
+            <div id="repConsList"></div>
+        </div>
+
+        <button class="btn-master btn-premium" onclick="alert('PDF Olarak Dışa Aktar özelliği Premium üyelere özeldir! 💎')">📄 Detaylı PDF Raporunu İndir 💎</button>
+    </div>
+
+    <script>
+        let currentUserId = localStorage.getItem('ri_user_id');
+
+        // Normal CV Slider Güncellemeleri
+        ['humor', 'finance', 'child', 'communication', 'habit'].forEach(key => {
+            const slider = document.getElementById(`w_${key}`);
+            if(slider) { slider.addEventListener('input', (e) => { document.getElementById(`lbl_w_${key}`).innerText = `%${e.target.value}`; }); }
+        });
+
+        // Wizard Slider Güncellemeleri
+        ['finance', 'child', 'humor', 'habit', 'communication'].forEach(key => {
+            const slider = document.getElementById(`wz_w_${key}`);
+            if(slider) { slider.addEventListener('input', (e) => { document.getElementById(`lbl_wz_w_${key}`).innerText = `%${e.target.value}`; }); }
+        });
+
+        function switchTab(tab) {
+            ['cv', 'dashboard', 'trends', 'coach', 'journal', 'couple'].forEach(t => {
+                document.getElementById(`${t}Panel`).classList.add('hidden');
+                document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`).classList.remove('active');
+            });
+            document.getElementById(`${tab}Panel`).classList.remove('hidden');
+            document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}Btn`).classList.add('active');
+
+            if(tab === 'dashboard') loadDates();
+            if(tab === 'trends') loadTrends();
+            if(tab === 'coach') loadCoachingHistory();
+            if(tab === 'journal') loadJournal();
+        }
+
+        function toggleAddDateForm() { document.getElementById('addDateBox').classList.toggle('hidden'); }
+        function toggleForms() { document.getElementById('loginForm').classList.toggle('hidden'); document.getElementById('registerForm').classList.toggle('hidden'); }
+
+        // WIZARD FONKSİYONLARI
+        function nextStep(step) {
+            document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            let progress = (step / 3) * 100;
+            document.getElementById('wizardProgress').style.width = `${progress}%`;
+        }
+
+        function startOnboarding(userId) {
+            currentUserId = userId; 
+            localStorage.setItem('ri_user_id', currentUserId); 
+            document.getElementById('authPanel').classList.add('hidden'); 
+            document.getElementById('onboardingLayer').classList.add('active'); 
+            nextStep(1); 
+        }
+
+        async function finishOnboarding() {
+            let payload = {};
+            ['finance', 'child', 'humor', 'habit', 'communication'].forEach(key => { 
+                payload[key] = { 
+                    expected: document.getElementById(`wz_${key}`).value, 
+                    importance: document.getElementById(`wz_w_${key}`).value, 
+                    is_red_flag: document.getElementById(`wz_rf_${key}`).checked 
+                }; 
+            });
+            
+            let res = await fetch(`/api/cv/${currentUserId}`, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({cv: payload}) 
+            });
+            
+            if(res.ok) {
+                document.getElementById('onboardingLayer').classList.remove('active'); 
+                alert("🎯 Harika! İlişki CV'n laboratuvara başarıyla kaydedildi.");
+                initApp(); 
+            }
+        }
+
+        // KAYIT VE GİRİŞ
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                let res = await fetch('/api/register', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: document.getElementById('regEmail').value, password: document.getElementById('regPassword').value, display_name: document.getElementById('regName').value})});
+                let data = await res.json();
+                if(res.ok) { 
+                    startOnboarding(data.user_id); 
+                } else { alert("❌ Hata: " + data.error); }
+            } catch(err) {}
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                let res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: document.getElementById('logEmail').value, password: document.getElementById('logPassword').value})});
+                let data = await res.json();
+                if(res.ok) { currentUserId = data.user_id; localStorage.setItem('ri_user_id', currentUserId); initApp(); } else { alert("❌ Hata: " + data.error); }
+            } catch(err) {}
+        });
+
+        function initApp() {
+            document.getElementById('authPanel').classList.add('hidden');
+            document.getElementById('topNav').classList.remove('hidden');
+            switchTab('dashboard'); loadCvData();
+        }
+
+        async function loadCvData() {
+            if(!currentUserId) return;
+            let res = await fetch(`/api/cv/${currentUserId}`);
+            if(res.ok) {
+                let data = await res.json();
+                Object.keys(data).forEach(key => {
+                    if(document.getElementById(`cv_${key}`)) document.getElementById(`cv_${key}`).value = data[key].expected;
+                    if(document.getElementById(`w_${key}`)) { document.getElementById(`w_${key}`).value = data[key].importance; document.getElementById(`lbl_w_${key}`).innerText = `%${data[key].importance}`; }
+                    if(document.getElementById(`rf_${key}`)) document.getElementById(`rf_${key}`).checked = data[key].is_red_flag;
+                });
+            }
+        }
+
+        document.getElementById('cvForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            let payload = {};
+            ['humor', 'finance', 'child', 'communication', 'habit'].forEach(key => { payload[key] = { expected: document.getElementById(`cv_${key}`).value, importance: document.getElementById(`w_${key}`).value, is_red_flag: document.getElementById(`rf_${key}`).checked }; });
+            await fetch(`/api/cv/${currentUserId}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({cv: payload}) });
+            alert("🎯 İlişki CV'niz kaydedildi!");
+        });
+
+        document.getElementById('addDateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            let attrs = {};
+            ['humor', 'finance', 'child', 'communication', 'habit'].forEach(key => { attrs[key] = document.getElementById(`attr_${key}`).value; });
+            let payload = { user_id: currentUserId, name: document.getElementById('d_name').value, job_or_education: document.getElementById('d_job').value, notes: document.getElementById('d_notes').value, attributes: attrs };
+            let res = await fetch('/api/dates', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            if(res.ok) { document.getElementById('addDateForm').reset(); toggleAddDateForm(); loadDates(); }
+        });
+
+        async function loadDates() {
+            if(!currentUserId) return;
+            let res = await fetch(`/api/dates/list/${currentUserId}`);
+            let container = document.getElementById('datesContainer'); container.innerHTML = '';
+            if(res.ok) {
+                let dates = await res.json();
+                if(dates.length === 0) { container.innerHTML = `<p style="color:var(--text-muted); text-align:center;">Profil bulunmuyor.</p>`; return; }
+                dates.forEach(d => {
+                    let lowClass = d.score < 50 ? 'low-score' : '';
+                    container.innerHTML += `<div class="date-card"><div class="date-info"><div class="date-name">${d.name}</div><div class="date-meta">${d.job_or_education || 'Eğitim/Meslek Yok'}</div></div><div class="date-score-badge ${lowClass}" onclick="viewAnalysis('${d.id}', '${d.name}')">%${d.score} Rapor</div></div>`;
+                });
+            }
+        }
+
+        async function viewAnalysis(dateId, name) {
+            let res = await fetch(`/api/dates/analysis/${currentUserId}/${dateId}`);
+            if(res.ok) {
+                let data = await res.json();
+                document.getElementById('repName').innerText = `${name} - Analiz Raporu`;
+                document.getElementById('repScore').innerText = `%${data.final_score}`;
+                document.getElementById('repNovaMessage').innerText = data.nova_message;
+                document.getElementById('repScore').style.color = data.final_score < 50 ? 'var(--alert)' : 'var(--success)';
+
+                let prosList = document.getElementById('repProsList'); prosList.innerHTML = '';
+                data.pros.forEach(p => { prosList.innerHTML += `<div class="report-list-item flag-green">${p}</div>`; });
+
+                let consList = document.getElementById('repConsList'); consList.innerHTML = '';
+                data.cons.forEach(c => { consList.innerHTML += `<div class="report-list-item">${c}</div>`; });
+
+                let critSection = document.getElementById('repCriticalSection'); let critList = document.getElementById('repCriticalList'); critList.innerHTML = '';
+                if(data.critical_conflicts && data.critical_conflicts.length > 0) {
+                    critSection.classList.remove('hidden');
+                    data.critical_conflicts.forEach(cc => { critList.innerHTML += `<div class="report-list-item flag-red">${cc}</div>`; });
+                } else { critSection.classList.add('hidden'); }
+
+                document.getElementById('analysisReportLayer').classList.add('active');
+            }
+        }
+
+        function closeReportLayer() { document.getElementById('analysisReportLayer').classList.remove('active'); }
+
+        async function loadTrends() {
+            let res = await fetch(`/api/trends/${currentUserId}`);
+            if(res.ok) { let data = await res.json(); document.getElementById('trend_total').innerText = data.total; document.getElementById('trend_macro_text').innerText = data.macro_insight; }
+        }
+
+        async function loadCoachingHistory() {
+            let res = await fetch(`/api/coaching/${currentUserId}`);
+            if(res.ok) {
+                let messages = await res.json(); let box = document.getElementById('coachingChatBox'); box.innerHTML = '';
+                messages.forEach(m => { box.innerHTML += `<div class="chat-msg ${m.sender === 'user' ? 'chat-user' : 'chat-nova'}">${m.content}</div>`; });
+                box.scrollTop = box.scrollHeight;
+            }
+        }
+
+        async function sendCoachingMsg() {
+            const input = document.getElementById('coachInput'); const msg = input.value.trim(); if(!msg) return; input.value = '';
+            document.getElementById('coachingChatBox').innerHTML += `<div class="chat-msg chat-user">${msg}</div>`; document.getElementById('coachingChatBox').scrollTop = document.getElementById('coachingChatBox').scrollHeight;
+            let res = await fetch(`/api/coaching/${currentUserId}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({message: msg}) });
+            if(res.ok) { setTimeout(loadCoachingHistory, 600); }
+        }
+
+        async function loadJournal() {
+            let res = await fetch(`/api/journal/${currentUserId}`);
+            let list = document.getElementById('journalList'); list.innerHTML = '';
+            if(res.ok) {
+                let entries = await res.json();
+                entries.forEach(e => { list.innerHTML += `<div class="journal-card"><div class="journal-date">${e.timestamp}</div><div>${e.entry_text}</div></div>`; });
+            }
+        }
+
+        async function saveJournal() {
+            const text = document.getElementById('journalInput').value.trim(); if(!text) return;
+            let res = await fetch(`/api/journal/${currentUserId}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({entry_text: text}) });
+            if(res.ok) { document.getElementById('journalInput').value = ''; loadJournal(); }
+        }
+        
+        async function runCoupleAnalysis() {
+            if(!currentUserId) return;
+            document.getElementById('coupleReportText').innerText = "Nova analiz ediyor...";
+            document.getElementById('coupleReportResult').classList.remove('hidden');
+            
+            let partnerCV = {
+                finance: document.getElementById('cp_finance').value,
+                child: document.getElementById('cp_child').value,
+                communication: document.getElementById('cp_communication').value
+            };
+            
+            let res = await fetch(`/api/couple_match/${currentUserId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({partner_cv: partnerCV})
+            });
+            
+            if(res.ok) {
+                let data = await res.json();
+                document.getElementById('coupleReportText').innerText = data.nova_report;
+            } else {
+                document.getElementById('coupleReportText').innerText = "Bir hata oluştu.";
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => { if(currentUserId) initApp(); });
+    </script>
+</body>
+</html>
