@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
+from werkzeug.security import generate_password_hash, check_password_hash
 from database import SessionLocal, engine, Base
 from models import User, RelationshipCV, DateProfile, DateAttribute, NovaCoachingLog, RelationshipJournal
 import uuid
-from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
 # Tabloları veritabanına inşa et (SQLite dosyası boşsa otomatik kurar)
@@ -55,16 +55,6 @@ def login():
     if user and check_password_hash(user.password_hash, data.get('password')):
         return jsonify({"message": "Giriş başarılı", "user_id": user.id})
         
-    return jsonify({"error": "E-posta veya şifre hatalı."}), 401
-
-@app.route('/api/login', methods=['POST'])
-def login():
-    data = request.json
-    db = SessionLocal()
-    user = db.query(User).filter(User.email == data.get('email'), User.password_hash == data.get('password')).first()
-    db.close()
-    if user:
-        return jsonify({"message": "Giriş başarılı", "user_id": user.id})
     return jsonify({"error": "E-posta veya şifre hatalı."}), 401
 
 
