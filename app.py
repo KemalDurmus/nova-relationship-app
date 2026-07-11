@@ -3,6 +3,7 @@ from flask_cors import CORS
 from database import SessionLocal, engine, Base
 from models import User, RelationshipCV, DateProfile, DateAttribute, NovaCoachingLog, RelationshipJournal
 import uuid
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
 # Tabloları veritabanına inşa et (SQLite dosyası boşsa otomatik kurar)
@@ -26,10 +27,13 @@ def register():
         db.close()
         return jsonify({"error": "Bu e-posta zaten kayıtlı."}), 400
     
+    # Parolayı hashleyerek güvenli hale getiriyoruz
+    guvenli_sifre = generate_password_hash(data.get('password'))
+    
     new_user = User(
         id=str(uuid.uuid4()), # Karmaşık UUID formatında ID üretir
         email=data.get('email'),
-        password_hash=data.get('password'),
+        password_hash=guvenli_sifre, # Şifrelenmiş parola veritabanına yazılır
         display_name=data.get('display_name')
     )
     db.add(new_user)
@@ -37,6 +41,21 @@ def register():
     user_id = new_user.id
     db.close()
     return jsonify({"message": "Kayıt başarılı", "user_id": user_id})
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.json
+    db = SessionLocal()
+    
+    # Sadece emaile göre kullanıcıyı buluyoruz
+    user = db.query(User).filter(User.email == data.get('email')).first()
+    db.close()
+    
+    # Kullanıcı varsa ve girilen şifrenin hash'i veritabanındakiyle eşleşiyorsa giriş ver
+    if user and check_password_hash(user.password_hash, data.get('password')):
+        return jsonify({"message": "Giriş başarılı", "user_id": user.id})
+        
+    return jsonify({"error": "E-posta veya şifre hatalı."}), 401
 
 @app.route('/api/login', methods=['POST'])
 def login():
