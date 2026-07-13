@@ -5,89 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nova - Relationship Intelligence</title>
     <style>
-        :root {
-            --bg-main: #0a0c14; --bg-panel: #141724; --bg-input: #1e2235; --border-color: #2b304a;
-            --text-main: #f3f4f6; --text-muted: #9ca3af; --accent-gold: #ffd32a; --success: #2ed573; --alert: #ff4757; --premium: #9b59b6;
-            --shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent;}
-        body { background-color: var(--bg-main); color: var(--text-main); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; overflow: hidden; }
-        .wrapper { width: 100%; max-width: 480px; height: 100vh; display: flex; flex-direction: column; position: relative; background: var(--bg-main); }
-        
-        /* --- MOBİL İÇİN TAM GÖRÜNÜR, KAYDIRMASIZ 3x2 IZGARA MENÜ --- */
-        .top-nav { display: flex; flex-direction: column; align-items: center; padding: 15px 10px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); width: 100%; gap: 10px; }
-        .nav-logo { font-size: 22px; font-weight: 900; color: var(--accent-gold); letter-spacing: 2px; }
+    :root {
+        --bg-main: #0a0c14; --bg-panel: #141724; --bg-input: #1e2235; --border-color: #2b304a;
+        --text-main: #f3f4f6; --text-muted: #9ca3af; --accent-gold: #ffd32a; --success: #2ed573; --alert: #ff4757; --premium: #9b59b6;
+        --shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent;}
+    body { background-color: var(--bg-main); color: var(--text-main); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; overflow: hidden; }
+    
+    /* WRAPPER ARTIK TÜM EKRANA YAYILACAK (PC'de ultra geniş olmaması için max 1400px limitli) */
+    .wrapper { width: 100%; max-width: 1400px; margin: 0 auto; height: 100vh; display: flex; flex-direction: column; position: relative; background: var(--bg-main); }
+    
+    /* STANDART MENÜ (Mobilde ve PC'de değişecek) */
+    .top-nav { display: flex; align-items: center; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); width: 100%; }
+    .nav-logo { font-size: 22px; font-weight: 900; color: var(--accent-gold); letter-spacing: 2px; }
+    .nav-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-muted); padding: 10px 4px; border-radius: 8px; font-size: 11px; text-align: center; cursor: pointer; font-weight: bold; white-space: nowrap; transition: all 0.2s; }
+    .nav-btn.active { color: var(--accent-gold); border-color: var(--accent-gold); background: rgba(255, 211, 42, 0.1); }
+    
+    .main-content { flex-grow: 1; padding: 20px; overflow-y: auto; padding-bottom: 30px; }
+    .hidden { display: none !important; }
+    
+    .panel { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 20px; border-radius: 18px; box-shadow: var(--shadow); width: 100%; text-align: center; }
+    h2 { font-size: 18px; margin-bottom: 15px; color: var(--text-main); text-align: left; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
+    
+    .form-group { margin-bottom: 15px; text-align: left; }
+    .form-group label { display: block; margin-bottom: 6px; font-size: 12px; color: var(--text-muted); font-weight: 600; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; color: white; outline: none; font-size: 13px; }
+    .slider-wrapper { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+    .slider-wrapper input[type="range"] { flex-grow: 1; accent-color: var(--accent-gold); }
+    .redflag-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--alert); font-weight: bold; }
+    
+    .btn-master { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent-gold), #e1b12c); border: none; color: #0a0c14; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 211, 42, 0.2); transition: 0.2s;}
+    .btn-master:active { transform: scale(0.98); }
+    .btn-premium { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3); margin-top: 15px; border: 1px solid #c39bd3;}
+    
+    .date-card { background: var(--bg-input); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+    .date-card:hover { border-color: var(--accent-gold); transform: translateY(-2px); }
+    .date-info { text-align: left; }
+    .date-name { font-size: 15px; font-weight: bold; color: white; }
+    .date-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .date-score-badge { padding: 8px 12px; border-radius: 10px; font-weight: 900; font-size: 13px; background: rgba(46, 213, 115, 0.1); color: var(--success); border: 1px solid rgba(46, 213, 115, 0.3); cursor: pointer; }
+    .date-score-badge.low-score { background: rgba(255, 71, 87, 0.1); color: var(--alert); border-color: rgba(255, 71, 87, 0.3); }
+
+    #analysisReportLayer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-main); z-index: 99999; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
+    #analysisReportLayer.active { display: flex !important; }
+    .report-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
+    .report-score-box { text-align: center; padding: 20px; background: var(--bg-panel); border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 20px; }
+    .report-score-val { font-size: 48px; font-weight: 900; color: var(--success); }
+    .report-section { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; margin-bottom: 15px; text-align: left; }
+    .report-section h4 { font-size: 12px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
+    .report-list-item { font-size: 13px; margin-bottom: 8px; padding-left: 12px; position: relative; }
+    .report-list-item::before { content: "•"; position: absolute; left: 0; color: var(--accent-gold); }
+    .flag-red { color: var(--alert); font-weight: bold; }
+    .flag-green { color: var(--success); font-weight: bold; }
+    
+    .chat-box { height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding-right: 5px; }
+    .chat-msg { max-width: 85%; padding: 12px; border-radius: 14px; font-size: 13px; line-height: 1.4; }
+    .chat-user { align-self: flex-end; background: var(--accent-gold); color: #0a0c14; font-weight: 500; border-bottom-right-radius: 2px; }
+    .chat-nova { align-self: flex-start; background: var(--bg-panel); color: white; border: 1px solid var(--border-color); border-bottom-left-radius: 2px; }
+
+    .journal-card { background: var(--bg-panel); border-left: 3px solid var(--accent-gold); padding: 12px; margin-bottom: 10px; border-radius: 8px; text-align: left; font-size: 12px;}
+    .journal-date { font-size: 10px; color: var(--text-muted); margin-bottom: 5px; }
+
+    /* --- ONBOARDING WIZARD STYLES --- */
+    #onboardingLayer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-main); z-index: 999999; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+    #onboardingLayer.active { display: flex !important; }
+    .wizard-panel { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 30px 20px; border-radius: 18px; box-shadow: var(--shadow); width: 100%; max-width: 500px; text-align: center; }
+    .wizard-step { display: none; animation: fadeIn 0.4s ease-in-out; }
+    .wizard-step.active { display: block; }
+    .wizard-header { font-size: 20px; font-weight: 900; color: var(--accent-gold); margin-bottom: 10px; }
+    .wizard-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; }
+    .wizard-nav { display: flex; justify-content: space-between; margin-top: 25px; gap: 10px; }
+    .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); padding: 12px; border-radius: 10px; flex: 1; cursor: pointer; font-weight: bold; }
+    .btn-next { background: var(--accent-gold); border: none; color: #0a0c14; padding: 12px; border-radius: 10px; flex: 1; cursor: pointer; font-weight: bold; }
+    .progress-container { width: 100%; background: var(--bg-input); height: 6px; border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
+    .progress-bar { height: 100%; background: var(--accent-gold); width: 25%; transition: width 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* =========================================================
+       RESPONSIVE (BİLGİSAYAR VE MOBİL UYUMU)
+       ========================================================= */
+    
+    /* 1. MOBİL CİHAZLAR İÇİN KULLANIM */
+    @media (max-width: 768px) {
+        .top-nav { flex-direction: column; padding: 15px 10px; gap: 10px; }
         .nav-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; }
-        .nav-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-muted); padding: 10px 4px; border-radius: 8px; font-size: 11px; text-align: center; cursor: pointer; font-weight: bold; white-space: nowrap; transition: all 0.2s; }
-        .nav-btn.active { color: var(--accent-gold); border-color: var(--accent-gold); background: rgba(255, 211, 42, 0.1); }
-        
-        .main-content { flex-grow: 1; padding: 20px; overflow-y: auto; padding-bottom: 30px; }
-        .hidden { display: none !important; }
-        
-        .panel { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 20px; border-radius: 18px; box-shadow: var(--shadow); width: 100%; text-align: center; }
-        h2 { font-size: 18px; margin-bottom: 15px; color: var(--text-main); text-align: left; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
-        
-        .form-group { margin-bottom: 15px; text-align: left; }
-        .form-group label { display: block; margin-bottom: 6px; font-size: 12px; color: var(--text-muted); font-weight: 600; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; color: white; outline: none; font-size: 13px; }
-        .slider-wrapper { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
-        .slider-wrapper input[type="range"] { flex-grow: 1; accent-color: var(--accent-gold); }
-        .redflag-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--alert); font-weight: bold; }
-        
-        .btn-master { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent-gold), #e1b12c); border: none; color: #0a0c14; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 211, 42, 0.2); transition: 0.2s;}
-        .btn-master:active { transform: scale(0.98); }
-        .btn-premium { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3); margin-top: 15px; border: 1px solid #c39bd3;}
-        
-        .date-card { background: var(--bg-input); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .date-info { text-align: left; }
-        .date-name { font-size: 15px; font-weight: bold; color: white; }
-        .date-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
-        .date-score-badge { padding: 8px 12px; border-radius: 10px; font-weight: 900; font-size: 13px; background: rgba(46, 213, 115, 0.1); color: var(--success); border: 1px solid rgba(46, 213, 115, 0.3); cursor: pointer; }
-        .date-score-badge.low-score { background: rgba(255, 71, 87, 0.1); color: var(--alert); border-color: rgba(255, 71, 87, 0.3); }
+    }
 
-        #analysisReportLayer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-main); z-index: 99999; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
-        #analysisReportLayer.active { display: flex !important; }
-        .report-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
-        .report-score-box { text-align: center; padding: 20px; background: var(--bg-panel); border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 20px; }
-        .report-score-val { font-size: 48px; font-weight: 900; color: var(--success); }
-        .report-section { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; margin-bottom: 15px; text-align: left; }
-        .report-section h4 { font-size: 12px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
-        .report-list-item { font-size: 13px; margin-bottom: 8px; padding-left: 12px; position: relative; }
-        .report-list-item::before { content: "•"; position: absolute; left: 0; color: var(--accent-gold); }
-        .flag-red { color: var(--alert); font-weight: bold; }
-        .flag-green { color: var(--success); font-weight: bold; }
+    /* 2. BİLGİSAYAR (PC) İÇİN KULLANIM (Geniş Ekran) */
+    @media (min-width: 769px) {
+        .top-nav { flex-direction: row; justify-content: space-between; padding: 20px 40px; }
+        .nav-tabs { display: flex; gap: 15px; width: auto; }
+        .nav-btn { padding: 12px 25px; font-size: 13px; }
         
-        .chat-box { height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding-right: 5px; }
-        .chat-msg { max-width: 85%; padding: 12px; border-radius: 14px; font-size: 13px; line-height: 1.4; }
-        .chat-user { align-self: flex-end; background: var(--accent-gold); color: #0a0c14; font-weight: 500; border-bottom-right-radius: 2px; }
-        .chat-nova { align-self: flex-start; background: var(--bg-panel); color: white; border: 1px solid var(--border-color); border-bottom-left-radius: 2px; }
-
-        .journal-card { background: var(--bg-panel); border-left: 3px solid var(--accent-gold); padding: 12px; margin-bottom: 10px; border-radius: 8px; text-align: left; font-size: 12px;}
-        .journal-date { font-size: 10px; color: var(--text-muted); margin-bottom: 5px; }
-
-        /* --- ONBOARDING WIZARD STYLES --- */
-        #onboardingLayer { 
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
-            background: var(--bg-main); z-index: 999999; display: none; 
-            flex-direction: column; justify-content: center; align-items: center; padding: 20px; 
-        }
-        #onboardingLayer.active { display: flex !important; }
-        .wizard-panel {
-            background: var(--bg-panel); border: 1px solid var(--border-color); 
-            padding: 30px 20px; border-radius: 18px; box-shadow: var(--shadow); 
-            width: 100%; max-width: 400px; text-align: center;
-        }
-        .wizard-step { display: none; animation: fadeIn 0.4s ease-in-out; }
-        .wizard-step.active { display: block; }
-        .wizard-header { font-size: 20px; font-weight: 900; color: var(--accent-gold); margin-bottom: 10px; }
-        .wizard-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; }
-        .wizard-nav { display: flex; justify-content: space-between; margin-top: 25px; gap: 10px; }
-        .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); padding: 12px; border-radius: 10px; flex: 1; cursor: pointer; font-weight: bold; }
-        .btn-next { background: var(--accent-gold); border: none; color: #0a0c14; padding: 12px; border-radius: 10px; flex: 1; cursor: pointer; font-weight: bold; }
-        .progress-container { width: 100%; background: var(--bg-input); height: 6px; border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
-        .progress-bar { height: 100%; background: var(--accent-gold); width: 25%; transition: width 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+        .main-content { padding: 40px; }
+        
+        /* Bilgisayarda formlar çok uzamasın diye ortalarız */
+        .panel { max-width: 600px; margin: 0 auto; }
+        #cvForm { max-width: 600px; margin: 0 auto; }
+        
+        /* Date kartlarını bilgisayarda yan yana grid (ızgara) halinde dizeriz */
+        #datesContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        
+        /* Analiz raporunu geniş ekranda daha şık ortalarız */
+        #analysisReportLayer { padding: 50px; align-items: center; }
+        .report-header, .report-score-box, .report-section { width: 100%; max-width: 700px; margin-left: auto; margin-right: auto; }
+        #analysisReportLayer .btn-master { max-width: 700px; margin: 0 auto; }
+    }
+</style>
 </head>
 <body>
 
@@ -236,7 +261,13 @@
 
         <!-- TAB 2: DASHBOARD / DATE LIST & ADD -->
         <div id="dashboardPanel" class="main-content hidden">
-            <h2>Date Laboratuvarı <button class="nav-btn" style="border-color:var(--accent-gold); color:var(--accent-gold);" onclick="toggleAddDateForm()">[+] Yeni Ekle</button></h2>
+            <h2>Date Laboratuvarı 
+                <div style="display:inline-flex; gap:5px;">
+                    <button class="nav-btn" style="border-color:var(--accent-gold); color:var(--accent-gold);" onclick="toggleAddDateForm()">[+] Yeni Ekle</button>
+                    <!-- YENİ EKLENEN GÜVENLİ ÇIKIŞ BUTONU -->
+                    <button class="nav-btn" style="border-color:var(--alert); color:var(--alert);" onclick="logout()">🚪 Çıkış</button>
+                </div>
+            </h2>
             
             <div id="addDateBox" class="panel hidden" style="text-align:left; margin-bottom:20px; border-color:var(--accent-gold);">
                 <h3 style="font-size:15px; margin-bottom:15px; color:white;">Yeni Gözlem Profili Girişi</h3>
@@ -356,6 +387,21 @@
     <script>
         let currentUserId = localStorage.getItem('ri_user_id');
 
+        // YENİ EKLENEN SİHİRLİ ANAHTAR FONKSİYONU (JWT Token'ı API'ye gösterir)
+        function getAuthHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('ri_token')
+            };
+        }
+
+        // ÇIKIŞ YAPMA FONKSİYONU
+        function logout() {
+            localStorage.removeItem('ri_user_id');
+            localStorage.removeItem('ri_token');
+            location.reload();
+        }
+
         // Normal CV Slider Güncellemeleri
         ['humor', 'finance', 'child', 'communication', 'habit'].forEach(key => {
             const slider = document.getElementById(`w_${key}`);
@@ -394,9 +440,10 @@
             document.getElementById('wizardProgress').style.width = `${progress}%`;
         }
 
-        function startOnboarding(userId) {
+        function startOnboarding(userId, token) {
             currentUserId = userId; 
             localStorage.setItem('ri_user_id', currentUserId); 
+            localStorage.setItem('ri_token', token); // TOKEN KAYDEDİLDİ
             document.getElementById('authPanel').classList.add('hidden'); 
             document.getElementById('onboardingLayer').classList.add('active'); 
             nextStep(1); 
@@ -414,7 +461,7 @@
             
             let res = await fetch(`/api/cv/${currentUserId}`, { 
                 method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
+                headers: getAuthHeaders(), // JWT KİLİDİ AÇILDI
                 body: JSON.stringify({cv: payload}) 
             });
             
@@ -422,6 +469,9 @@
                 document.getElementById('onboardingLayer').classList.remove('active'); 
                 alert("🎯 Harika! İlişki CV'n laboratuvara başarıyla kaydedildi.");
                 initApp(); 
+            } else {
+                alert("Oturum süreniz dolmuş olabilir. Lütfen tekrar giriş yapın.");
+                logout();
             }
         }
 
@@ -432,7 +482,9 @@
                 let res = await fetch('/api/register', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: document.getElementById('regEmail').value, password: document.getElementById('regPassword').value, display_name: document.getElementById('regName').value})});
                 let data = await res.json();
                 if(res.ok) { 
-                    startOnboarding(data.user_id); 
+                    // Kayıt olan kullanıcıyı direkt giriş ekranına yönlendirelim (Güvenlik için önce login olmalı)
+                    alert("Kayıt başarılı! Lütfen giriş yapın.");
+                    toggleForms();
                 } else { alert("❌ Hata: " + data.error); }
             } catch(err) {}
         });
@@ -442,7 +494,20 @@
             try {
                 let res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: document.getElementById('logEmail').value, password: document.getElementById('logPassword').value})});
                 let data = await res.json();
-                if(res.ok) { currentUserId = data.user_id; localStorage.setItem('ri_user_id', currentUserId); initApp(); } else { alert("❌ Hata: " + data.error); }
+                if(res.ok) { 
+                    currentUserId = data.user_id; 
+                    localStorage.setItem('ri_user_id', currentUserId); 
+                    localStorage.setItem('ri_token', data.token); // TOKEN KAYDEDİLDİ
+                    
+                    // Eğer kullanıcının CV'si yoksa sihirbaza, varsa dashboard'a yönlendir
+                    let cvCheck = await fetch(`/api/cv/${currentUserId}`, { headers: getAuthHeaders() });
+                    let cvData = await cvCheck.json();
+                    if(Object.keys(cvData).length === 0) {
+                        startOnboarding(currentUserId, data.token);
+                    } else {
+                        initApp(); 
+                    }
+                } else { alert("❌ Hata: " + data.error); }
             } catch(err) {}
         });
 
@@ -454,7 +519,7 @@
 
         async function loadCvData() {
             if(!currentUserId) return;
-            let res = await fetch(`/api/cv/${currentUserId}`);
+            let res = await fetch(`/api/cv/${currentUserId}`, { headers: getAuthHeaders() }); // JWT KİLİDİ AÇILDI
             if(res.ok) {
                 let data = await res.json();
                 Object.keys(data).forEach(key => {
@@ -469,7 +534,7 @@
             e.preventDefault();
             let payload = {};
             ['humor', 'finance', 'child', 'communication', 'habit'].forEach(key => { payload[key] = { expected: document.getElementById(`cv_${key}`).value, importance: document.getElementById(`w_${key}`).value, is_red_flag: document.getElementById(`rf_${key}`).checked }; });
-            await fetch(`/api/cv/${currentUserId}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({cv: payload}) });
+            await fetch(`/api/cv/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({cv: payload}) }); // JWT KİLİDİ AÇILDI
             alert("🎯 İlişki CV'niz kaydedildi!");
         });
 
@@ -478,13 +543,14 @@
             let attrs = {};
             ['humor', 'finance', 'child', 'communication', 'habit'].forEach(key => { attrs[key] = document.getElementById(`attr_${key}`).value; });
             let payload = { user_id: currentUserId, name: document.getElementById('d_name').value, job_or_education: document.getElementById('d_job').value, notes: document.getElementById('d_notes').value, attributes: attrs };
-            let res = await fetch('/api/dates', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            let res = await fetch('/api/dates', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) }); // JWT KİLİDİ AÇILDI
             if(res.ok) { document.getElementById('addDateForm').reset(); toggleAddDateForm(); loadDates(); }
+            else { alert("Kaydetme işlemi yetkisiz reddedildi!"); logout(); }
         });
 
         async function loadDates() {
             if(!currentUserId) return;
-            let res = await fetch(`/api/dates/list/${currentUserId}`);
+            let res = await fetch(`/api/dates/list/${currentUserId}`, { headers: getAuthHeaders() }); // JWT KİLİDİ AÇILDI
             let container = document.getElementById('datesContainer'); container.innerHTML = '';
             if(res.ok) {
                 let dates = await res.json();
@@ -493,11 +559,13 @@
                     let lowClass = d.score < 50 ? 'low-score' : '';
                     container.innerHTML += `<div class="date-card"><div class="date-info"><div class="date-name">${d.name}</div><div class="date-meta">${d.job_or_education || 'Eğitim/Meslek Yok'}</div></div><div class="date-score-badge ${lowClass}" onclick="viewAnalysis('${d.id}', '${d.name}')">%${d.score} Rapor</div></div>`;
                 });
+            } else if(res.status === 401 || res.status === 403) {
+                logout(); // Oturum süresi dolduysa çıkış yap
             }
         }
 
         async function viewAnalysis(dateId, name) {
-            let res = await fetch(`/api/dates/analysis/${currentUserId}/${dateId}`);
+            let res = await fetch(`/api/dates/analysis/${currentUserId}/${dateId}`, { headers: getAuthHeaders() }); // JWT KİLİDİ AÇILDI
             if(res.ok) {
                 let data = await res.json();
                 document.getElementById('repName').innerText = `${name} - Analiz Raporu`;
@@ -524,12 +592,12 @@
         function closeReportLayer() { document.getElementById('analysisReportLayer').classList.remove('active'); }
 
         async function loadTrends() {
-            let res = await fetch(`/api/trends/${currentUserId}`);
+            let res = await fetch(`/api/trends/${currentUserId}`, { headers: getAuthHeaders() }); // JWT KİLİDİ AÇILDI
             if(res.ok) { let data = await res.json(); document.getElementById('trend_total').innerText = data.total; document.getElementById('trend_macro_text').innerText = data.macro_insight; }
         }
 
         async function loadCoachingHistory() {
-            let res = await fetch(`/api/coaching/${currentUserId}`);
+            let res = await fetch(`/api/coaching/${currentUserId}`, { headers: getAuthHeaders() }); // JWT KİLİDİ AÇILDI
             if(res.ok) {
                 let messages = await res.json(); let box = document.getElementById('coachingChatBox'); box.innerHTML = '';
                 messages.forEach(m => { box.innerHTML += `<div class="chat-msg ${m.sender === 'user' ? 'chat-user' : 'chat-nova'}">${m.content}</div>`; });
@@ -540,12 +608,12 @@
         async function sendCoachingMsg() {
             const input = document.getElementById('coachInput'); const msg = input.value.trim(); if(!msg) return; input.value = '';
             document.getElementById('coachingChatBox').innerHTML += `<div class="chat-msg chat-user">${msg}</div>`; document.getElementById('coachingChatBox').scrollTop = document.getElementById('coachingChatBox').scrollHeight;
-            let res = await fetch(`/api/coaching/${currentUserId}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({message: msg}) });
+            let res = await fetch(`/api/coaching/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({message: msg}) }); // JWT KİLİDİ AÇILDI
             if(res.ok) { setTimeout(loadCoachingHistory, 600); }
         }
 
         async function loadJournal() {
-            let res = await fetch(`/api/journal/${currentUserId}`);
+            let res = await fetch(`/api/journal/${currentUserId}`, { headers: getAuthHeaders() }); // JWT KİLİDİ AÇILDI
             let list = document.getElementById('journalList'); list.innerHTML = '';
             if(res.ok) {
                 let entries = await res.json();
@@ -555,7 +623,7 @@
 
         async function saveJournal() {
             const text = document.getElementById('journalInput').value.trim(); if(!text) return;
-            let res = await fetch(`/api/journal/${currentUserId}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({entry_text: text}) });
+            let res = await fetch(`/api/journal/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({entry_text: text}) }); // JWT KİLİDİ AÇILDI
             if(res.ok) { document.getElementById('journalInput').value = ''; loadJournal(); }
         }
         
@@ -572,7 +640,7 @@
             
             let res = await fetch(`/api/couple_match/${currentUserId}`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: getAuthHeaders(), // JWT KİLİDİ AÇILDI
                 body: JSON.stringify({partner_cv: partnerCV})
             });
             
@@ -584,7 +652,14 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', () => { if(currentUserId) initApp(); });
+        window.addEventListener('DOMContentLoaded', () => { 
+            // Eğer sayfa yenilendiğinde token yoksa, kullanıcıyı zorla login ekranına at.
+            if(currentUserId && localStorage.getItem('ri_token')) {
+                initApp(); 
+            } else {
+                logout();
+            }
+        });
     </script>
 </body>
 </html>
