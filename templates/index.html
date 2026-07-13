@@ -16,10 +16,12 @@
         body { 
             background: radial-gradient(circle at 15% 0%, #16102b, #06080f 40%, #08111c);
             background-attachment: fixed;
-            color: var(--text-main); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; overflow: hidden; 
+            /* 100vh YERİNE 100dvh KULLANILDI (MOBİL ADRES ÇUBUĞU BUG'I İÇİN) */
+            color: var(--text-main); min-height: 100dvh; display: flex; justify-content: center; align-items: flex-start; overflow: hidden; 
         }
         
-        .wrapper { width: 100%; max-width: 1400px; margin: 0 auto; height: 100vh; display: flex; flex-direction: column; position: relative;}
+        /* height 100dvh OLARAK GÜNCELLENDİ */
+        .wrapper { width: 100%; max-width: 1400px; margin: 0 auto; height: 100dvh; display: flex; flex-direction: column; position: relative;}
         
         .glass-panel {
             background: var(--bg-panel);
@@ -36,7 +38,8 @@
         .nav-btn:hover { background: rgba(255,255,255,0.05); }
         .nav-btn.active { color: var(--accent-gold); border-color: var(--accent-gold); background: rgba(255, 211, 42, 0.1); }
         
-        .main-content { flex-grow: 1; padding: 20px; overflow-y: auto; padding-bottom: 30px; }
+        /* PADDING-BOTTOM 120PX YAPILDI - EN ALTA KAYDIRMAYI GARANTİLER */
+        .main-content { flex-grow: 1; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
         .hidden { display: none !important; }
         
         .panel { padding: 25px; border-radius: 20px; width: 100%; text-align: center; }
@@ -63,30 +66,34 @@
         .slider-wrapper { display: flex; align-items: center; gap: 10px; }
         .slider-wrapper input[type="range"] { flex-grow: 1; accent-color: var(--accent-gold); cursor: pointer;}
         
-        /* 🚨 HİZALAMA BURADA DÜZELTİLDİ 🚨 */
         .redflag-wrapper { 
             display: inline-flex; 
-            align-items: center; /* Dikeyde kusursuz ortalama yapar */
+            align-items: center; 
             gap: 8px; 
             margin-top: 15px; 
             font-size: 12px; 
             color: var(--alert); 
             font-weight: bold; 
-            cursor: help;
             padding: 8px 12px; 
             background: rgba(255, 71, 87, 0.05); 
             border-radius: 8px; 
             border: 1px solid rgba(255, 71, 87, 0.1);
-            line-height: 1; /* Yazının yukarı/aşağı kaymasını engeller */
+            line-height: 1; 
+            width: 100%;
         }
         .redflag-wrapper input[type="checkbox"] { 
-            margin: 0; 
-            cursor: pointer; 
-            width: 14px; 
-            height: 14px; 
-            accent-color: var(--alert);
+            margin: 0; cursor: pointer; width: 14px; height: 14px; accent-color: var(--alert);
         }
         
+        .info-icon {
+            display: inline-flex; justify-content: center; align-items: center;
+            width: 18px; height: 18px; border-radius: 50%; 
+            background: rgba(255, 255, 255, 0.15); color: var(--text-main);
+            font-size: 11px; font-weight: bold; margin-left: auto; 
+            transition: 0.2s; cursor: pointer;
+        }
+        .info-icon:active { transform: scale(0.9); background: var(--accent-gold); color: #000; }
+
         .btn-master { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent-gold), #e1b12c); border: none; color: #0a0c14; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 211, 42, 0.2); transition: 0.2s;}
         .btn-master:active { transform: scale(0.98); }
         .btn-premium { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3); border: 1px solid #c39bd3;}
@@ -114,6 +121,7 @@
         .flag-red { color: var(--alert); font-weight: bold; }
         .flag-green { color: var(--success); font-weight: bold; }
         
+        /* KOÇLUK SOHBET KUTUSU BOYUTU GÜNCELLENDİ */
         .chat-box { height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding-right: 5px; }
         .chat-msg { max-width: 85%; padding: 12px; border-radius: 14px; font-size: 13px; line-height: 1.4; }
         .chat-user { align-self: flex-end; background: var(--accent-gold); color: #0a0c14; font-weight: 500; border-bottom-right-radius: 2px; }
@@ -131,41 +139,17 @@
         .progress-bar { height: 100%; background: var(--accent-gold); width: 25%; transition: width 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* MOBİL GÖRÜNÜM */
         @media (max-width: 768px) {
             .top-nav { flex-direction: column; padding: 15px 10px; gap: 15px; }
             .nav-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; }
             #logoutBtn { grid-column: span 3; }
         }
         
-        /* 🚨 PC GÖRÜNÜMÜ MERKEZLEMESİ BURADA YAPILDI 🚨 */
         @media (min-width: 769px) {
-            .top-nav { 
-                flex-direction: row; 
-                justify-content: center; /* Menü sekmelerini tam ortaya alır */
-                padding: 20px 40px; 
-                position: relative; /* Logo ve Çıkış butonunu kenarlara sabitlemek için */
-            }
-            .nav-logo { 
-                position: absolute; 
-                left: 40px; 
-                top: 50%; 
-                transform: translateY(-50%); 
-            }
-            #logoutBtn { 
-                position: absolute; 
-                right: 40px; 
-                top: 50%; 
-                transform: translateY(-50%); 
-                margin-left: 0; 
-            }
-            .nav-tabs { 
-                display: flex; 
-                gap: 10px; 
-                width: auto; 
-                align-items: center; 
-                margin: 0 auto; 
-            }
+            .top-nav { flex-direction: row; justify-content: center; padding: 20px 40px; position: relative; }
+            .nav-logo { position: absolute; left: 40px; top: 50%; transform: translateY(-50%); }
+            #logoutBtn { position: absolute; right: 40px; top: 50%; transform: translateY(-50%); margin-left: 0; }
+            .nav-tabs { display: flex; gap: 10px; width: auto; align-items: center; margin: 0 auto; }
             .main-content { padding: 40px; }
             .panel { max-width: 650px; margin: 0 auto; }
             #cvForm { max-width: 650px; margin: 0 auto; }
@@ -197,7 +181,7 @@
                             <select id="wz_finance"><option value="Birikim Odaklı">Birikim Odaklı</option><option value="Dengeli">Dengeli</option><option value="Savurgan">Farketmez</option></select>
                             <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
                             <div class="slider-wrapper"><input type="range" id="wz_w_finance" min="0" max="100" value="50"><span id="lbl_wz_w_finance" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
-                            <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından bağımsız olarak acımasızca -25 ceza kesilir."><input type="checkbox" id="wz_rf_finance"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                            <label class="redflag-wrapper"><input type="checkbox" id="wz_rf_finance"> 🚨 Bu kriter kırmızı çizgimdir <span class="info-icon" onclick="showInfo(event)">?</span></label>
                         </div>
                     </div>
                     
@@ -207,7 +191,7 @@
                             <select id="wz_child"><option value="İstiyor">İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Kararsız</option></select>
                             <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
                             <div class="slider-wrapper"><input type="range" id="wz_w_child" min="0" max="100" value="50"><span id="lbl_wz_w_child" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
-                            <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından bağımsız olarak acımasızca -25 ceza kesilir."><input type="checkbox" id="wz_rf_child"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                            <label class="redflag-wrapper"><input type="checkbox" id="wz_rf_child"> 🚨 Bu kriter kırmızı çizgimdir <span class="info-icon" onclick="showInfo(event)">?</span></label>
                         </div>
                     </div>
 
@@ -221,9 +205,9 @@
                     <div class="wizard-header">Yaşam Tarzı</div>
                     <div class="wizard-desc">Sosyal dinamikler ve günlük alışkanlıklarını dürüstçe işaretle.</div>
                     
-                    <div class="criteria-card"><div class="form-group"><label>Mizah Anlayışı</label><select id="wz_humor"><option value="Yüksek">Yüksek</option><option value="Orta">Orta</option><option value="Düşük">Önemli Değil</option></select><div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div><div class="slider-wrapper"><input type="range" id="wz_w_humor" min="0" max="100" value="50"><span id="lbl_wz_w_humor" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper" title="Zıtlık durumunda -25 şok cezası keser."><input type="checkbox" id="wz_rf_humor"> 🚨 Bu kırmızı çizgimdir</label></div></div>
-                    <div class="criteria-card"><div class="form-group"><label>Zararlı Alışkanlıklar</label><select id="wz_habit"><option value="Kullanmıyor">Kullanmıyor</option><option value="Sosyal İçici">Sosyal İçici</option><option value="Kullanıyor">Sorun Değil</option></select><div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div><div class="slider-wrapper"><input type="range" id="wz_w_habit" min="0" max="100" value="50"><span id="lbl_wz_w_habit" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper" title="Zıtlık durumunda -25 şok cezası keser."><input type="checkbox" id="wz_rf_habit"> 🚨 Bu kırmızı çizgimdir</label></div></div>
-                    <div class="criteria-card"><div class="form-group"><label>İletişim Sıklığı</label><select id="wz_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select><div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div><div class="slider-wrapper"><input type="range" id="wz_w_communication" min="0" max="100" value="50"><span id="lbl_wz_w_communication" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper" title="Zıtlık durumunda -25 şok cezası keser."><input type="checkbox" id="wz_rf_communication"> 🚨 Bu kırmızı çizgimdir</label></div></div>
+                    <div class="criteria-card"><div class="form-group"><label>Mizah Anlayışı</label><select id="wz_humor"><option value="Yüksek">Yüksek</option><option value="Orta">Orta</option><option value="Düşük">Önemli Değil</option></select><div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div><div class="slider-wrapper"><input type="range" id="wz_w_humor" min="0" max="100" value="50"><span id="lbl_wz_w_humor" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper"><input type="checkbox" id="wz_rf_humor"> 🚨 Bu kırmızı çizgimdir <span class="info-icon" onclick="showInfo(event)">?</span></label></div></div>
+                    <div class="criteria-card"><div class="form-group"><label>Zararlı Alışkanlıklar</label><select id="wz_habit"><option value="Kullanmıyor">Kullanmıyor</option><option value="Sosyal İçici">Sosyal İçici</option><option value="Kullanıyor">Sorun Değil</option></select><div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div><div class="slider-wrapper"><input type="range" id="wz_w_habit" min="0" max="100" value="50"><span id="lbl_wz_w_habit" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper"><input type="checkbox" id="wz_rf_habit"> 🚨 Bu kırmızı çizgimdir <span class="info-icon" onclick="showInfo(event)">?</span></label></div></div>
+                    <div class="criteria-card"><div class="form-group"><label>İletişim Sıklığı</label><select id="wz_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select><div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div><div class="slider-wrapper"><input type="range" id="wz_w_communication" min="0" max="100" value="50"><span id="lbl_wz_w_communication" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper"><input type="checkbox" id="wz_rf_communication"> 🚨 Bu kırmızı çizgimdir <span class="info-icon" onclick="showInfo(event)">?</span></label></div></div>
                     
                     <div class="wizard-nav">
                         <button type="button" class="btn-outline" onclick="nextStep(2)">Geri</button>
@@ -245,7 +229,6 @@
                 <button id="tabTrendsBtn" class="nav-btn" onclick="switchTab('trends')">Trendler</button>
                 <button id="tabCoupleBtn" class="nav-btn" style="color:var(--premium); border-color:var(--premium);" onclick="switchTab('couple')">Çift Analizi</button>
             </div>
-            <!-- Çıkış butonu artık mobil hariç en sağda sabit duracak -->
             <button id="logoutBtn" class="nav-btn" style="color:var(--alert); border-color:var(--alert);" onclick="logout()">Çıkış Yap</button>
         </div>
 
@@ -284,7 +267,7 @@
                         <select id="cv_humor"><option value="Yüksek">Yüksek</option><option value="Orta">Orta</option><option value="Düşük">Önemli Değil</option></select>
                         <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
                         <div class="slider-wrapper"><input type="range" id="w_humor" min="0" max="100" value="50"><span id="lbl_w_humor" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
-                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından bağımsız olarak acımasızca -25 ceza kesilir."><input type="checkbox" id="rf_humor"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                        <label class="redflag-wrapper"><input type="checkbox" id="rf_humor"> 🚨 Bu kriter kırmızı çizgimdir <span class="info-icon" onclick="showInfo(event)">?</span></label>
                     </div>
                 </div>
                 <div class="criteria-card">
@@ -293,7 +276,7 @@
                         <select id="cv_finance"><option value="Birikim Odaklı">Birikim Odaklı</option><option value="Dengeli">Dengeli</option><option value="Savurgan">Farketmez</option></select>
                         <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
                         <div class="slider-wrapper"><input type="range" id="w_finance" min="0" max="100" value="50"><span id="lbl_w_finance" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
-                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından bağımsız olarak acımasızca -25 ceza kesilir."><input type="checkbox" id="rf_finance"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                        <label class="redflag-wrapper"><input type="checkbox" id="rf_finance"> 🚨 Bu kriter kırmızı çizgimdir <span class="info-icon" onclick="showInfo(event)">?</span></label>
                     </div>
                 </div>
                 <div class="criteria-card">
@@ -302,7 +285,7 @@
                         <select id="cv_child"><option value="İstiyor">İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Kararsız</option></select>
                         <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
                         <div class="slider-wrapper"><input type="range" id="w_child" min="0" max="100" value="50"><span id="lbl_w_child" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
-                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından bağımsız olarak acımasızca -25 ceza kesilir."><input type="checkbox" id="rf_child"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                        <label class="redflag-wrapper"><input type="checkbox" id="rf_child"> 🚨 Bu kriter kırmızı çizgimdir <span class="info-icon" onclick="showInfo(event)">?</span></label>
                     </div>
                 </div>
                 <div class="criteria-card">
@@ -311,7 +294,7 @@
                         <select id="cv_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select>
                         <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
                         <div class="slider-wrapper"><input type="range" id="w_communication" min="0" max="100" value="50"><span id="lbl_w_communication" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
-                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından bağımsız olarak acımasızca -25 ceza kesilir."><input type="checkbox" id="rf_communication"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                        <label class="redflag-wrapper"><input type="checkbox" id="rf_communication"> 🚨 Bu kriter kırmızı çizgimdir <span class="info-icon" onclick="showInfo(event)">?</span></label>
                     </div>
                 </div>
                 <div class="criteria-card">
@@ -320,7 +303,7 @@
                         <select id="cv_habit"><option value="Kullanmıyor">Kullanmıyor</option><option value="Sosyal İçici">Sosyal İçici</option><option value="Kullanıyor">Sorun Değil</option></select>
                         <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
                         <div class="slider-wrapper"><input type="range" id="w_habit" min="0" max="100" value="50"><span id="lbl_w_habit" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
-                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından bağımsız olarak acımasızca -25 ceza kesilir."><input type="checkbox" id="rf_habit"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                        <label class="redflag-wrapper"><input type="checkbox" id="rf_habit"> 🚨 Bu kriter kırmızı çizgimdir <span class="info-icon" onclick="showInfo(event)">?</span></label>
                     </div>
                 </div>
                 <button type="submit" class="btn-master" style="margin-top:10px;">Değişiklikleri Algoritmaya Kaydet</button>
@@ -349,7 +332,16 @@
         </div>
 
         <div id="journalPanel" class="main-content hidden"><h2>İlişki Günlüğü <span style="font-size:10px; color:var(--premium);">💎 Premium Analiz</span></h2><div class="form-group"><textarea id="journalInput" rows="3" placeholder="Bugün buluşmada hissettiğim şey..."></textarea><button class="btn-master" style="padding: 10px;" onclick="saveJournal()">Günlüğe Kaydet</button></div><div id="journalList" style="margin-top: 20px;"></div></div>
-        <div id="coachPanel" class="main-content hidden"><h2>Nova Karar Destek Asistanı</h2><div class="chat-box" id="coachingChatBox"></div><div style="display:flex; gap:8px;"><input type="text" id="coachInput" style="flex-grow:1; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; padding:12px; color:white; outline:none;" placeholder="Senaryoyu girin..."><button class="btn-master" style="width:45px; height:45px; padding:0;" onclick="sendCoachingMsg()">➤</button></div></div>
+        
+        <div id="coachPanel" class="main-content hidden">
+            <h2>Nova Karar Destek Asistanı</h2>
+            <div class="chat-box" id="coachingChatBox"></div>
+            <div style="display:flex; gap:8px;">
+                <input type="text" id="coachInput" style="flex-grow:1; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; padding:12px; color:white; outline:none;" placeholder="Senaryoyu girin...">
+                <button class="btn-master" style="width:45px; height:45px; padding:0;" onclick="sendCoachingMsg()">➤</button>
+            </div>
+        </div>
+        
         <div id="trendsPanel" class="main-content hidden"><h2>Farkındalık Trendleri</h2><div class="panel glass-panel" style="text-align:left;"><p>Veri Havuzu: <span id="trend_total" style="font-weight:bold; color:white;">0</span> Aday</p><div class="criteria-card" style="margin-top:15px;"><h4>Makro Analiz</h4><p id="trend_macro_text" style="font-size:13px; color:var(--text-main); margin-top:5px;"></p></div></div></div>
         <div id="couplePanel" class="main-content hidden"><h2>Çift Laboratuvarı <span style="font-size:10px; color:var(--premium);">💎 Premium</span></h2><div class="panel glass-panel" style="text-align:left;"><div class="form-group"><label>Partnerinin Finansal Beklentisi</label><select id="cp_finance"><option value="Birikim Odaklı">Birikim Odaklı</option><option value="Dengeli">Dengeli</option><option value="Savurgan">Savurgan</option></select></div><div class="form-group"><label>Partnerinin Çocuk İsteği</label><select id="cp_child"><option value="İstiyor">İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Kararsız</option></select></div><div class="form-group"><label>Partnerinin İletişim Beklentisi</label><select id="cp_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select></div><button class="btn-master btn-premium" onclick="runCoupleAnalysis()">Çapraz Analizi Başlat</button></div><div id="coupleReportResult" class="panel glass-panel hidden" style="margin-top:15px; border-color:var(--premium); text-align:left;"><h4 style="color:var(--premium);">Çift Teşhisi</h4><p id="coupleReportText" style="font-size:13px; line-height:1.5; color:white; margin-top:5px;"></p></div></div>
     </div>
@@ -369,6 +361,11 @@
 
     <script>
         let currentUserId = localStorage.getItem('ri_user_id');
+
+        function showInfo(e) {
+            e.preventDefault();
+            alert("🚨 KIRMIZI ÇİZGİ CEZASI:\n\nBu konu normalde senin için az önemli olsa bile, eğer adayın özelliği senin beklentinle TAMAMEN ZITSA, uyum puanından acımasızca -25 ceza kesilir.");
+        }
 
         function getAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('ri_token') }; }
         function logout() { localStorage.removeItem('ri_user_id'); localStorage.removeItem('ri_token'); location.reload(); }
@@ -509,7 +506,23 @@
 
         function closeReportLayer() { document.getElementById('analysisReportLayer').classList.remove('active'); }
         async function loadTrends() { let res = await fetch(`/api/trends/${currentUserId}`, { headers: getAuthHeaders() }); if(res.ok) { let data = await res.json(); document.getElementById('trend_total').innerText = data.total; document.getElementById('trend_macro_text').innerText = data.macro_insight; } }
-        async function loadCoachingHistory() { let res = await fetch(`/api/coaching/${currentUserId}`, { headers: getAuthHeaders() }); if(res.ok) { let msgs = await res.json(); let box = document.getElementById('coachingChatBox'); box.innerHTML = ''; msgs.forEach(m => { box.innerHTML += `<div class="chat-msg ${m.sender === 'user' ? 'chat-user' : 'chat-nova'}">${m.content}</div>`; }); box.scrollTop = box.scrollHeight; } }
+        
+        // YENİ EKLENEN: KOÇLUK EKRANI İLK MESAJI
+        async function loadCoachingHistory() { 
+            let res = await fetch(`/api/coaching/${currentUserId}`, { headers: getAuthHeaders() }); 
+            if(res.ok) { 
+                let msgs = await res.json(); 
+                let box = document.getElementById('coachingChatBox'); 
+                box.innerHTML = ''; 
+                if(msgs.length === 0) {
+                    box.innerHTML = `<div class="chat-msg chat-nova">Nova: Laboratuvara hoş geldin. Kafanı karıştıran bir senaryo varsa aşağıya yaz, birlikte analiz edelim.</div>`;
+                } else {
+                    msgs.forEach(m => { box.innerHTML += `<div class="chat-msg ${m.sender === 'user' ? 'chat-user' : 'chat-nova'}">${m.content}</div>`; }); 
+                }
+                box.scrollTop = box.scrollHeight; 
+            } 
+        }
+        
         async function sendCoachingMsg() { let i = document.getElementById('coachInput'); let m = i.value.trim(); if(!m) return; i.value = ''; document.getElementById('coachingChatBox').innerHTML += `<div class="chat-msg chat-user">${m}</div>`; let res = await fetch(`/api/coaching/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({message: m}) }); if(res.ok) setTimeout(loadCoachingHistory, 500); }
         async function loadJournal() { let res = await fetch(`/api/journal/${currentUserId}`, { headers: getAuthHeaders() }); if(res.ok) { let d = await res.json(); let l = document.getElementById('journalList'); l.innerHTML = ''; d.forEach(e => { l.innerHTML += `<div class="criteria-card"><div style="font-size:10px; color:var(--text-muted);">${e.timestamp}</div><div>${e.entry_text}</div></div>`; }); } }
         async function saveJournal() { let t = document.getElementById('journalInput').value.trim(); if(!t) return; let res = await fetch(`/api/journal/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({entry_text: t}) }); if(res.ok) { document.getElementById('journalInput').value = ''; loadJournal(); } }
