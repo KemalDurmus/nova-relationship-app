@@ -653,13 +653,15 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => { 
-            // Eğer sayfa yenilendiğinde token yoksa, kullanıcıyı zorla login ekranına at.
-            if(currentUserId && localStorage.getItem('ri_token')) {
-                initApp(); 
-            } else {
-                logout();
-            }
-        });
+    // Sonsuz döngüye girmemesi için logout() ile yenilemek yerine sadece ekranı ayarlıyoruz
+    if(currentUserId && localStorage.getItem('ri_token')) {
+        initApp(); 
+    } else {
+        currentUserId = null; // Eski kalıntıları temizle
+        document.getElementById('authPanel').classList.remove('hidden');
+        document.getElementById('topNav').classList.add('hidden');
+    }
+    });
     </script>
 </body>
 </html>
