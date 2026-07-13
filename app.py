@@ -96,7 +96,7 @@ def handle_cv(user_id):
         return jsonify(result)
 
 
-# --- YENİ EKLENEN: NOVA MATEMATİKSEL PUANLAMA MOTORU ---
+# --- NOVA MATEMATİKSEL PUANLAMA MOTORU ---
 def calculate_match_score(user_cv_records, date_attributes):
     if not user_cv_records or not date_attributes: 
         return 50 # Veri yoksa ortalama puan
@@ -142,7 +142,7 @@ def calculate_match_score(user_cv_records, date_attributes):
     return max(0, min(100, final_score))
 
 
-# --- DATE (ADAY) LİSTESİ API ---
+# --- DATE (ADAY) YÖNETİMİ API ---
 @app.route('/api/dates', methods=['POST'])
 @jwt_required()
 def add_date():
@@ -154,13 +154,9 @@ def add_date():
 
     db = SessionLocal()
     
-    # 1. Kullanıcının CV'sini veritabanından çekiyoruz
     user_cv = db.query(RelationshipCV).filter_by(user_id=user_id).all()
-    
-    # 2. Adayın özelliklerini form verisinden alıyoruz
     attrs = data.get('attributes', {})
     
-    # 3. KİLİT NOKTA: Algoritmayı çalıştırıp puanı hesaplıyoruz!
     calculated_score = calculate_match_score(user_cv, attrs)
     
     new_profile = DateProfile(
@@ -168,7 +164,7 @@ def add_date():
         name=data.get('name'),
         job_or_education=data.get('job_or_education'),
         notes=data.get('notes'),
-        score=calculated_score # ARTIK 0 DEĞİL, GERÇEK PUAN YAZILIYOR
+        score=calculated_score 
     )
     db.add(new_profile)
     db.commit()
@@ -200,6 +196,25 @@ def list_dates(user_id):
     db.close()
     return jsonify(result)
 
+# YENİ EKLENEN: Aday Silme Fonksiyonu
+@app.route('/api/dates/<date_id>', methods=['DELETE'])
+@jwt_required()
+def delete_date(date_id):
+    user_id = get_jwt_identity()
+    db = SessionLocal()
+    
+    profile = db.query(DateProfile).filter_by(id=date_id, user_id=user_id).first()
+    if not profile:
+        db.close()
+        return jsonify({"error": "Profil bulunamadı veya yetkiniz yok."}), 404
+        
+    db.query(DateAttribute).filter_by(date_id=date_id).delete()
+    db.delete(profile)
+    db.commit()
+    db.close()
+    
+    return jsonify({"message": "Aday laboratuvardan silindi."})
+
 @app.route('/api/dates/analysis/<user_id>/<date_id>', methods=['GET'])
 @jwt_required()
 def analyze_date(user_id, date_id):
@@ -207,14 +222,12 @@ def analyze_date(user_id, date_id):
         return jsonify({"error": "Yetkisiz erişim."}), 403
 
     db = SessionLocal()
-    # Adayın genel bilgilerini çek
     profile = db.query(DateProfile).filter_by(id=date_id).first()
     
     if not profile:
         db.close()
         return jsonify({"error": "Kayıt bulunamadı"}), 404
         
-    # Senin CV'ni ve adayın özelliklerini çek
     user_cv = db.query(RelationshipCV).filter_by(user_id=user_id).all()
     date_attrs = db.query(DateAttribute).filter_by(date_id=date_id).all()
     
@@ -225,7 +238,6 @@ def analyze_date(user_id, date_id):
     cons = []
     critical_conflicts = []
     
-    # Veritabanındaki İngilizce anahtarları Türkçe okunabilir metinlere çeviriyoruz
     key_names = {
         'humor': 'Mizah Anlayışı',
         'finance': 'Finansal Tutum',
@@ -234,26 +246,18 @@ def analyze_date(user_id, date_id):
         'habit': 'Zararlı Alışkanlıklar'
     }
 
-    # Satır satır CV ve Aday karşılaştırması
     for key, actual_val in attr_dict.items():
         if key in cv_dict:
             cv = cv_dict[key]
             expected_val = cv.expected_value
             readable_key = key_names.get(key, key)
             
-            # Tam uyum veya senin için fark etmeyen durumlar (Green Flags)
             if expected_val == actual_val or expected_val in ["Farketmez", "Önemli Değil", "Sorun Değil"]:
                 pros.append(f"{readable_key} tam istediğin gibi ({actual_val})")
-            
-            # Kısmi uyum / Orta yol gereken durumlar (Eksiler/Riskler)
             elif actual_val in ["Dengeli", "Orta", "Sosyal İçici", "Kararsız"] or expected_val in ["Dengeli", "Orta", "Sosyal İçici", "Kararsız"]:
                 cons.append(f"{readable_key} konusunda orta yolu bulmanız gerekebilir (Sen: {expected_val} / O: {actual_val})")
-            
-            # Tam zıtlık durumları
             else:
                 msg = f"{readable_key} dinamikleri tamamen zıt (Sen: {expected_val} / O: {actual_val})"
-                
-                # Eğer bu zıtlık senin kırmızı çizginse, acil durum listesine at!
                 if cv.is_red_flag:
                     critical_conflicts.append(msg)
                 else:
@@ -261,7 +265,6 @@ def analyze_date(user_id, date_id):
     
     db.close()
     
-    # Nova'nın puana göre değişen dinamik teşhis mesajı
     nova_msg = f"Nova: {profile.name} için mantıksal analiz tamamlandı. "
     if profile.score >= 80:
         nova_msg += "Kağıt üzerinde harika bir uyum! Bu potansiyeli mutlaka değerlendirmelisin."
@@ -277,6 +280,7 @@ def analyze_date(user_id, date_id):
         "cons": cons if cons else ["Her şey yolunda görünüyor, belirgin bir pürüz yok."],
         "critical_conflicts": critical_conflicts
     })
+
 
 # --- GÜNLÜK, KOÇLUK VE TRENDLER API ---
 @app.route('/api/journal/<user_id>', methods=['GET', 'POST'])
