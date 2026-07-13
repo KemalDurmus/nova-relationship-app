@@ -15,7 +15,6 @@ app = Flask(__name__)
 CORS(app)
 
 # --- JWT (KİMLİK DOĞRULAMA) AYARLARI ---
-# Render'daki gizli kasamızdan şifreyi çeker, bulamazsa uyarı verir.
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "gizli-anahtari-koymayi-unutma")
 jwt = JWTManager(app)
 
@@ -57,12 +56,11 @@ def login():
     db.close()
     
     if user and check_password_hash(user.password_hash, data.get('password')):
-        # Kilit Nokta: Kullanıcıya özel dijital kimlik kartı (Token) üretiyoruz
         access_token = create_access_token(identity=user.id)
         return jsonify({
             "message": "Giriş başarılı", 
             "user_id": user.id, 
-            "token": access_token # Token'ı Frontend'e gönderiyoruz
+            "token": access_token
         })
         
     return jsonify({"error": "E-posta veya şifre hatalı."}), 401
@@ -70,11 +68,10 @@ def login():
 
 # --- İLİŞKİ CV API ---
 @app.route('/api/cv/<user_id>', methods=['GET', 'POST'])
-@jwt_required() # KİLİT 1: Token yoksa bu satırdan aşağısı çalışmaz!
+@jwt_required()
 def handle_cv(user_id):
-    # KİLİT 2 (IDOR Koruması): İstek atan kişinin token'ındaki ID ile, URL'deki ID aynı mı?
     if get_jwt_identity() != user_id:
-        return jsonify({"error": "Yetkisiz erişim. Sadece kendi verilerinizi görebilirsiniz."}), 403
+        return jsonify({"error": "Yetkisiz erişim."}), 403
 
     db = SessionLocal()
     if request.method == 'POST':
@@ -128,9 +125,14 @@ def add_date():
             actual_value=val
         )
         db.add(new_attr)
+    
     db.commit()
+    
+    # KİLİT NOKTA: Hata almamak için ID'yi veritabanı kapanmadan önce kopyalıyoruz
+    kaydedilen_id = new_profile.id
+    
     db.close()
-    return jsonify({"message": "Date başarıyla eklendi", "date_id": new_profile.id})
+    return jsonify({"message": "Date başarıyla eklendi", "date_id": kaydedilen_id})
 
 @app.route('/api/dates/list/<user_id>', methods=['GET'])
 @jwt_required()
@@ -240,13 +242,15 @@ def couple_match(user_id):
         } for record in user_cv_records
     }
     
-    from ai_service import generate_couple_report
-    report = generate_couple_report(str(user_cv_dict), str(partner_cv))
+    try:
+        from ai_service import generate_couple_report
+        report = generate_couple_report(str(user_cv_dict), str(partner_cv))
+    except ImportError:
+        report = "Yapay zeka servisi şu an kullanılamıyor. Lütfen daha sonra tekrar deneyin."
     
     return jsonify({"nova_report": report})
 
 
 if __name__ == '__main__':
-    # Canlı ortamda (Render) Debug modunu tehlike yaratmaması için otomatik kapatıyoruz (Hata 2'nin çözümü)
     is_dev = os.getenv("FLASK_ENV") == "development"
     app.run(debug=is_dev, use_reloader=False)
