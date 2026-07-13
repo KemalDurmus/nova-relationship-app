@@ -539,14 +539,31 @@
         });
 
         document.getElementById('addDateForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            let attrs = {};
-            ['humor', 'finance', 'child', 'communication', 'habit'].forEach(key => { attrs[key] = document.getElementById(`attr_${key}`).value; });
-            let payload = { user_id: currentUserId, name: document.getElementById('d_name').value, job_or_education: document.getElementById('d_job').value, notes: document.getElementById('d_notes').value, attributes: attrs };
-            let res = await fetch('/api/dates', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) }); // JWT KİLİDİ AÇILDI
-            if(res.ok) { document.getElementById('addDateForm').reset(); toggleAddDateForm(); loadDates(); }
-            else { alert("Kaydetme işlemi yetkisiz reddedildi!"); logout(); }
-        });
+    e.preventDefault();
+    let attrs = {};
+    ['humor', 'finance', 'child', 'communication', 'habit'].forEach(key => { attrs[key] = document.getElementById(`attr_${key}`).value; });
+    let payload = { user_id: currentUserId, name: document.getElementById('d_name').value, job_or_education: document.getElementById('d_job').value, notes: document.getElementById('d_notes').value, attributes: attrs };
+    
+    try {
+        let res = await fetch('/api/dates', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+        if(res.ok) { 
+            document.getElementById('addDateForm').reset(); 
+            toggleAddDateForm(); 
+            loadDates(); 
+        } else { 
+            // Hatayı sunucudan okuyup ekrana basıyoruz
+            let err = await res.json().catch(()=>({}));
+            alert(`🚨 İşlem Başarısız (Hata Kodu: ${res.status})\nDetay: ${err.error || err.msg || "Sunucu/Veritabanı hatası!"}`);
+            
+            // Sadece 401 veya 403 ise (gerçek yetkisizlik) çıkış yap
+            if(res.status === 401 || res.status === 403) {
+                logout(); 
+            }
+        }
+    } catch(err) {
+        alert("Bağlantı hatası yaşandı!");
+    }
+});
 
         async function loadDates() {
             if(!currentUserId) return;
