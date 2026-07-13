@@ -81,7 +81,6 @@
         }
         .info-icon:active { transform: scale(0.9); background: var(--accent-gold); color: #000; }
 
-        /* BUTON HİZALAMASI (ÖNCEKİ DÜZELTME EKLENDİ) */
         .btn-master { 
             display: block; width: 100%; margin-top: 20px; padding: 14px; 
             background: linear-gradient(135deg, var(--accent-gold), #e1b12c); 
@@ -130,22 +129,22 @@
         .progress-container { width: 100%; background: var(--bg-input); height: 6px; border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
         .progress-bar { height: 100%; background: var(--accent-gold); width: 25%; transition: width 0.3s; }
         
-        /* 🚨 YENİ EKLENEN: ÖZEL (CUSTOM) BİLGİ PENCERESİ 🚨 */
+        /* 🚨 YENİ: GLOBAL DİNAMİK MODAL TASARIMI 🚨 */
         .custom-alert-layer {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
-            z-index: 9999999; /* En üstte durması için */
-            display: none; justify-content: center; align-items: center; padding: 20px;
+            z-index: 9999999; display: none; justify-content: center; align-items: center; padding: 20px;
         }
         .custom-alert-layer.active { display: flex; animation: fadeIn 0.2s ease-in-out; }
         .custom-alert-box {
-            background: var(--bg-panel); border: 1px solid var(--alert);
+            background: var(--bg-panel); border: 1px solid var(--border-color);
             border-radius: 20px; padding: 30px 20px; max-width: 400px; width: 100%;
-            text-align: center; box-shadow: 0 10px 40px rgba(255, 71, 87, 0.2);
+            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
         .custom-alert-icon { font-size: 40px; margin-bottom: 10px; }
-        .custom-alert-title { color: var(--alert); font-size: 18px; font-weight: 900; margin-bottom: 15px; letter-spacing: 1px; }
+        .custom-alert-title { color: var(--accent-gold); font-size: 18px; font-weight: 900; margin-bottom: 15px; letter-spacing: 1px; }
         .custom-alert-text { color: var(--text-main); font-size: 14px; line-height: 1.6; margin-bottom: 25px; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: center; }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -171,13 +170,16 @@
 </head>
 <body>
 
-    <!-- 🚨 YENİ: ÖZEL BİLGİ PENCERESİ (CUSTOM ALERT) 🚨 -->
-    <div id="customInfoAlert" class="custom-alert-layer">
+    <!-- 🚨 YENİ: GLOBAL DİNAMİK AÇILIR PENCERE (MODAL) 🚨 -->
+    <div id="globalCustomModal" class="custom-alert-layer">
         <div class="custom-alert-box glass-panel">
-            <div class="custom-alert-icon">🚨</div>
-            <div class="custom-alert-title">KIRMIZI ÇİZGİ CEZASI</div>
-            <div class="custom-alert-text">Bu konu normalde senin için az önemli olsa bile, eğer adayın özelliği senin beklentinle <strong>TAMAMEN ZITSA</strong>, uyum puanından acımasızca <strong>-25 ceza</strong> kesilir.</div>
-            <button class="btn-master" style="background: var(--bg-input); color: white; border: 1px solid var(--alert); box-shadow: none;" onclick="closeInfoAlert()">Anladım</button>
+            <div id="modalIcon" class="custom-alert-icon">🔔</div>
+            <div id="modalTitle" class="custom-alert-title">Bilgi</div>
+            <div id="modalText" class="custom-alert-text">Mesaj içeriği...</div>
+            <div class="modal-buttons">
+                <button id="modalBtnNo" class="btn-master hidden" style="background: rgba(255,255,255,0.1); color: white; box-shadow: none; margin-top:0;">İptal</button>
+                <button id="modalBtnYes" class="btn-master" style="margin-top:0;">Tamam</button>
+            </div>
         </div>
     </div>
 
@@ -376,19 +378,64 @@
         <div id="repCriticalSection" class="report-section hidden" style="border-color:var(--alert); background:rgba(255,71,87,0.1);"><h4 style="color:var(--alert);">🚨 Kritik Uyuşmazlıklar (Kırmızı Çizgiler)</h4><div id="repCriticalList"></div></div>
         <div class="report-section glass-panel"><h4 style="color:var(--success);">✅ Güçlü Yönler (Green Flags)</h4><div id="repProsList"></div></div>
         <div class="report-section glass-panel"><h4 style="color:var(--text-muted);">⚠️ Risk Değerlendirmeleri (Eksiler)</h4><div id="repConsList"></div></div>
-        <button class="btn-master btn-premium" onclick="alert('PDF Olarak Dışa Aktar özelliği Premium üyelere özeldir! 💎')">📄 Detaylı PDF Raporunu İndir 💎</button>
+        
+        <!-- YENİ: PDF Butonundaki alert de özel modala bağlandı -->
+        <button class="btn-master btn-premium" onclick="customAlert('Detaylı PDF Olarak Dışa Aktar özelliği Premium üyelere özeldir.', '💎 Premium Özellik', '💎')">📄 Detaylı PDF Raporunu İndir 💎</button>
     </div>
 
     <script>
         let currentUserId = localStorage.getItem('ri_user_id');
 
-        // YENİ EKLENEN: ÖZEL UYARI FONKSİYONLARI
+        // 🚨 YENİ EKLENEN: GLOBAL DİNAMİK AÇILIR PENCERE (MODAL) YÖNETİCİSİ 🚨
+        function showCustomModal(title, text, icon, isConfirm = false) {
+            return new Promise((resolve) => {
+                document.getElementById('modalTitle').innerText = title;
+                document.getElementById('modalText').innerHTML = text;
+                document.getElementById('modalIcon').innerText = icon || "🔔";
+                
+                const btnYes = document.getElementById('modalBtnYes');
+                const btnNo = document.getElementById('modalBtnNo');
+                const layer = document.getElementById('globalCustomModal');
+                
+                // Eğer bu bir Onay/İptal (Confirm) sorusuysa
+                if(isConfirm) {
+                    btnNo.classList.remove('hidden');
+                    document.getElementById('modalTitle').style.color = "var(--alert)";
+                    btnYes.innerText = "Evet, Sil";
+                    btnYes.style.background = "linear-gradient(135deg, var(--alert), #c0392b)";
+                } 
+                // Sadece bilgi (Alert) veriyorsa
+                else {
+                    btnNo.classList.add('hidden');
+                    document.getElementById('modalTitle').style.color = "var(--accent-gold)";
+                    btnYes.innerText = "Tamam";
+                    btnYes.style.background = "linear-gradient(135deg, var(--accent-gold), #e1b12c)";
+                }
+                
+                layer.classList.add('active');
+                
+                const handleYes = () => { layer.classList.remove('active'); cleanup(); resolve(true); };
+                const handleNo = () => { layer.classList.remove('active'); cleanup(); resolve(false); };
+                
+                const cleanup = () => {
+                    btnYes.removeEventListener('click', handleYes);
+                    btnNo.removeEventListener('click', handleNo);
+                };
+                
+                btnYes.addEventListener('click', handleYes);
+                btnNo.addEventListener('click', handleNo);
+            });
+        }
+        
+        // Hızlı Kullanım Kısayolları
+        async function customAlert(text, title="Bildirim", icon="🔔") { await showCustomModal(title, text, icon, false); }
+        async function customConfirm(text, title="Onay Gerekli", icon="❓") { return await showCustomModal(title, text, icon, true); }
+
+
+        // Kırmızı Çizgi İkonu Tıklama Olayı (Eski alert değiştirildi)
         function showInfoAlert(e) {
             e.preventDefault(); 
-            document.getElementById('customInfoAlert').classList.add('active');
-        }
-        function closeInfoAlert() {
-            document.getElementById('customInfoAlert').classList.remove('active');
+            customAlert("Bu konu normalde senin için az önemli olsa bile, eğer adayın özelliği senin beklentinle <strong>TAMAMEN ZITSA</strong>, uyum puanından acımasızca <strong>-25 ceza</strong> kesilir.", "KIRMIZI ÇİZGİ CEZASI", "🚨");
         }
 
         function getAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('ri_token') }; }
@@ -439,7 +486,12 @@
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             let res = await fetch('/api/register', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: document.getElementById('regEmail').value, password: document.getElementById('regPassword').value, display_name: document.getElementById('regName').value})});
-            if(res.ok) { alert("Kayıt başarılı! Lütfen giriş yapın."); toggleForms(); } else { alert("Hata oluştu."); }
+            if(res.ok) { 
+                await customAlert("Kayıt işlemi başarılı! Lütfen giriş yapın.", "Harika!", "✅"); 
+                toggleForms(); 
+            } else { 
+                await customAlert("Kayıt sırasında bir hata oluştu.", "Hata", "❌"); 
+            }
         });
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -451,7 +503,9 @@
                 let cvCheck = await fetch(`/api/cv/${currentUserId}`, { headers: getAuthHeaders() });
                 let cvData = await cvCheck.json();
                 if(Object.keys(cvData).length === 0) startOnboarding(currentUserId, data.token); else initApp();
-            } else { alert("❌ " + data.error); }
+            } else { 
+                customAlert(data.error || "Giriş yapılamadı.", "Giriş Başarısız", "❌"); 
+            }
         });
 
         function initApp() { document.getElementById('authPanel').classList.add('hidden'); document.getElementById('topNav').classList.remove('hidden'); switchTab('dashboard'); loadCvData(); }
@@ -472,7 +526,8 @@
         document.getElementById('cvForm').addEventListener('submit', async (e) => {
             e.preventDefault(); let payload = {};
             ['humor', 'finance', 'child', 'communication', 'habit'].forEach(key => { payload[key] = { expected: document.getElementById(`cv_${key}`).value, importance: document.getElementById(`w_${key}`).value, is_red_flag: document.getElementById(`rf_${key}`).checked }; });
-            await fetch(`/api/cv/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({cv: payload}) }); alert("CV Güncellendi!");
+            await fetch(`/api/cv/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({cv: payload}) }); 
+            customAlert("İlişki CV'niz başarıyla kaydedildi ve algoritmaya işlendi.", "Başarılı", "🎯");
         });
 
         document.getElementById('addDateForm').addEventListener('submit', async (e) => {
@@ -508,9 +563,12 @@
         }
 
         async function deleteDate(dateId) {
-            if(!confirm("Bu adayı laboratuvardan silmek istediğine emin misin?")) return;
+            // YENİ: Çirkin confirm yerine bizim yeni şık onay kutumuz çalışıyor
+            let onay = await customConfirm("Bu adayı laboratuvardan kalıcı olarak silmek istediğine emin misin?", "Adayı Sil", "🗑️");
+            if(!onay) return;
+            
             let res = await fetch(`/api/dates/${dateId}`, { method: 'DELETE', headers: getAuthHeaders() });
-            if(res.ok) { loadDates(); } else { alert("Silme işlemi başarısız."); }
+            if(res.ok) { loadDates(); } else { customAlert("Silme işlemi başarısız.", "Hata", "❌"); }
         }
 
         async function viewAnalysis(dateId, name) {
