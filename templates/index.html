@@ -13,7 +13,6 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent;}
         
-        /* EŞSİZ ARKA PLAN: Derin uzay/laboratuvar hissi veren radyal geçiş */
         body { 
             background: radial-gradient(circle at 15% 0%, #16102b, #06080f 40%, #08111c);
             background-attachment: fixed;
@@ -22,7 +21,6 @@
         
         .wrapper { width: 100%; max-width: 1400px; margin: 0 auto; height: 100vh; display: flex; flex-direction: column; position: relative;}
         
-        /* CAM EFEKTİ (Glassmorphism) */
         .glass-panel {
             background: var(--bg-panel);
             backdrop-filter: blur(12px);
@@ -44,7 +42,6 @@
         .panel { padding: 25px; border-radius: 20px; width: 100%; text-align: center; }
         h2 { font-size: 18px; margin-bottom: 15px; color: var(--text-main); text-align: left; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
         
-        /* AYAR KUTUCUKLARI (Criteria Cards) */
         .criteria-card {
             background: rgba(0, 0, 0, 0.25);
             border: 1px solid var(--border-color);
@@ -66,13 +63,29 @@
         .slider-wrapper { display: flex; align-items: center; gap: 10px; }
         .slider-wrapper input[type="range"] { flex-grow: 1; accent-color: var(--accent-gold); cursor: pointer;}
         
-        /* DÜZELTİLMİŞ KIRMIZI ÇİZGİ TASARIMI */
+        /* 🚨 HİZALAMA BURADA DÜZELTİLDİ 🚨 */
         .redflag-wrapper { 
-            display: inline-flex; align-items: center; gap: 8px; margin-top: 15px; 
-            font-size: 12px; color: var(--alert); font-weight: bold; cursor: help;
-            padding: 8px 12px; background: rgba(255, 71, 87, 0.05); border-radius: 8px; border: 1px solid rgba(255, 71, 87, 0.1);
+            display: inline-flex; 
+            align-items: center; /* Dikeyde kusursuz ortalama yapar */
+            gap: 8px; 
+            margin-top: 15px; 
+            font-size: 12px; 
+            color: var(--alert); 
+            font-weight: bold; 
+            cursor: help;
+            padding: 8px 12px; 
+            background: rgba(255, 71, 87, 0.05); 
+            border-radius: 8px; 
+            border: 1px solid rgba(255, 71, 87, 0.1);
+            line-height: 1; /* Yazının yukarı/aşağı kaymasını engeller */
         }
-        .redflag-wrapper input { cursor: pointer; }
+        .redflag-wrapper input[type="checkbox"] { 
+            margin: 0; 
+            cursor: pointer; 
+            width: 14px; 
+            height: 14px; 
+            accent-color: var(--alert);
+        }
         
         .btn-master { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent-gold), #e1b12c); border: none; color: #0a0c14; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 211, 42, 0.2); transition: 0.2s;}
         .btn-master:active { transform: scale(0.98); }
@@ -106,7 +119,6 @@
         .chat-user { align-self: flex-end; background: var(--accent-gold); color: #0a0c14; font-weight: 500; border-bottom-right-radius: 2px; }
         .chat-nova { align-self: flex-start; background: rgba(0,0,0,0.4); color: white; border: 1px solid var(--border-color); border-bottom-left-radius: 2px; }
 
-        /* WIZARD */
         #onboardingLayer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-main); z-index: 999999; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
         #onboardingLayer.active { display: flex !important; }
         .wizard-step { display: none; animation: fadeIn 0.4s ease-in-out; }
@@ -119,15 +131,41 @@
         .progress-bar { height: 100%; background: var(--accent-gold); width: 25%; transition: width 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* RESPONSIVE */
+        /* MOBİL GÖRÜNÜM */
         @media (max-width: 768px) {
             .top-nav { flex-direction: column; padding: 15px 10px; gap: 15px; }
             .nav-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; }
-            #logoutBtn { grid-column: span 3; } /* Mobilde çıkış butonu alt satıra yayılır */
+            #logoutBtn { grid-column: span 3; }
         }
+        
+        /* 🚨 PC GÖRÜNÜMÜ MERKEZLEMESİ BURADA YAPILDI 🚨 */
         @media (min-width: 769px) {
-            .top-nav { flex-direction: row; justify-content: space-between; padding: 20px 40px; }
-            .nav-tabs { display: flex; gap: 10px; width: auto; align-items: center;}
+            .top-nav { 
+                flex-direction: row; 
+                justify-content: center; /* Menü sekmelerini tam ortaya alır */
+                padding: 20px 40px; 
+                position: relative; /* Logo ve Çıkış butonunu kenarlara sabitlemek için */
+            }
+            .nav-logo { 
+                position: absolute; 
+                left: 40px; 
+                top: 50%; 
+                transform: translateY(-50%); 
+            }
+            #logoutBtn { 
+                position: absolute; 
+                right: 40px; 
+                top: 50%; 
+                transform: translateY(-50%); 
+                margin-left: 0; 
+            }
+            .nav-tabs { 
+                display: flex; 
+                gap: 10px; 
+                width: auto; 
+                align-items: center; 
+                margin: 0 auto; 
+            }
             .main-content { padding: 40px; }
             .panel { max-width: 650px; margin: 0 auto; }
             #cvForm { max-width: 650px; margin: 0 auto; }
@@ -139,7 +177,6 @@
 </head>
 <body>
 
-    <!-- WIZARD SİHİRBAZI -->
     <div id="onboardingLayer">
         <div class="glass-panel" style="padding: 40px; border-radius: 20px; max-width: 500px; width: 100%;">
             <div class="progress-container"><div class="progress-bar" id="wizardProgress"></div></div>
@@ -160,7 +197,7 @@
                             <select id="wz_finance"><option value="Birikim Odaklı">Birikim Odaklı</option><option value="Dengeli">Dengeli</option><option value="Savurgan">Farketmez</option></select>
                             <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
                             <div class="slider-wrapper"><input type="range" id="wz_w_finance" min="0" max="100" value="50"><span id="lbl_wz_w_finance" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
-                            <label class="redflag-wrapper" title="Eğer adayın özelliği senin beklentinle tamamen zıtsa, uyum puanından acımasızca -25 ceza puanı kesilir."><input type="checkbox" id="wz_rf_finance"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                            <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından bağımsız olarak acımasızca -25 ceza kesilir."><input type="checkbox" id="wz_rf_finance"> 🚨 Bu kriter kırmızı çizgimdir</label>
                         </div>
                     </div>
                     
@@ -170,7 +207,7 @@
                             <select id="wz_child"><option value="İstiyor">İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Kararsız</option></select>
                             <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
                             <div class="slider-wrapper"><input type="range" id="wz_w_child" min="0" max="100" value="50"><span id="lbl_wz_w_child" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
-                            <label class="redflag-wrapper" title="Eğer adayın özelliği senin beklentinle tamamen zıtsa, uyum puanından acımasızca -25 ceza puanı kesilir."><input type="checkbox" id="wz_rf_child"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                            <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından bağımsız olarak acımasızca -25 ceza kesilir."><input type="checkbox" id="wz_rf_child"> 🚨 Bu kriter kırmızı çizgimdir</label>
                         </div>
                     </div>
 
@@ -184,9 +221,9 @@
                     <div class="wizard-header">Yaşam Tarzı</div>
                     <div class="wizard-desc">Sosyal dinamikler ve günlük alışkanlıklarını dürüstçe işaretle.</div>
                     
-                    <div class="criteria-card"><div class="form-group"><label>Mizah Anlayışı</label><select id="wz_humor"><option value="Yüksek">Yüksek</option><option value="Orta">Orta</option><option value="Düşük">Önemli Değil</option></select><div class="slider-info">Önem Derecesi</div><div class="slider-wrapper"><input type="range" id="wz_w_humor" min="0" max="100" value="50"><span id="lbl_wz_w_humor" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper" title="Zıtlık durumunda -25 ceza keser."><input type="checkbox" id="wz_rf_humor"> 🚨 Bu kırmızı çizgimdir</label></div></div>
-                    <div class="criteria-card"><div class="form-group"><label>Zararlı Alışkanlıklar</label><select id="wz_habit"><option value="Kullanmıyor">Kullanmıyor</option><option value="Sosyal İçici">Sosyal İçici</option><option value="Kullanıyor">Sorun Değil</option></select><div class="slider-info">Önem Derecesi</div><div class="slider-wrapper"><input type="range" id="wz_w_habit" min="0" max="100" value="50"><span id="lbl_wz_w_habit" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper" title="Zıtlık durumunda -25 ceza keser."><input type="checkbox" id="wz_rf_habit"> 🚨 Bu kırmızı çizgimdir</label></div></div>
-                    <div class="criteria-card"><div class="form-group"><label>İletişim Sıklığı</label><select id="wz_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select><div class="slider-info">Önem Derecesi</div><div class="slider-wrapper"><input type="range" id="wz_w_communication" min="0" max="100" value="50"><span id="lbl_wz_w_communication" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper" title="Zıtlık durumunda -25 ceza keser."><input type="checkbox" id="wz_rf_communication"> 🚨 Bu kırmızı çizgimdir</label></div></div>
+                    <div class="criteria-card"><div class="form-group"><label>Mizah Anlayışı</label><select id="wz_humor"><option value="Yüksek">Yüksek</option><option value="Orta">Orta</option><option value="Düşük">Önemli Değil</option></select><div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div><div class="slider-wrapper"><input type="range" id="wz_w_humor" min="0" max="100" value="50"><span id="lbl_wz_w_humor" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper" title="Zıtlık durumunda -25 şok cezası keser."><input type="checkbox" id="wz_rf_humor"> 🚨 Bu kırmızı çizgimdir</label></div></div>
+                    <div class="criteria-card"><div class="form-group"><label>Zararlı Alışkanlıklar</label><select id="wz_habit"><option value="Kullanmıyor">Kullanmıyor</option><option value="Sosyal İçici">Sosyal İçici</option><option value="Kullanıyor">Sorun Değil</option></select><div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div><div class="slider-wrapper"><input type="range" id="wz_w_habit" min="0" max="100" value="50"><span id="lbl_wz_w_habit" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper" title="Zıtlık durumunda -25 şok cezası keser."><input type="checkbox" id="wz_rf_habit"> 🚨 Bu kırmızı çizgimdir</label></div></div>
+                    <div class="criteria-card"><div class="form-group"><label>İletişim Sıklığı</label><select id="wz_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select><div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div><div class="slider-wrapper"><input type="range" id="wz_w_communication" min="0" max="100" value="50"><span id="lbl_wz_w_communication" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper" title="Zıtlık durumunda -25 şok cezası keser."><input type="checkbox" id="wz_rf_communication"> 🚨 Bu kırmızı çizgimdir</label></div></div>
                     
                     <div class="wizard-nav">
                         <button type="button" class="btn-outline" onclick="nextStep(2)">Geri</button>
@@ -198,7 +235,6 @@
     </div>
 
     <div class="wrapper">
-        <!-- GLOBAL MENÜ (Emojiler Kaldırıldı, Çıkış Butonu Eklendi) -->
         <div id="topNav" class="top-nav glass-panel hidden">
             <div class="nav-logo">NOVA</div>
             <div class="nav-tabs">
@@ -208,11 +244,11 @@
                 <button id="tabJournalBtn" class="nav-btn" onclick="switchTab('journal')">Günlük</button>
                 <button id="tabTrendsBtn" class="nav-btn" onclick="switchTab('trends')">Trendler</button>
                 <button id="tabCoupleBtn" class="nav-btn" style="color:var(--premium); border-color:var(--premium);" onclick="switchTab('couple')">Çift Analizi</button>
-                <button id="logoutBtn" class="nav-btn" style="color:var(--alert); border-color:var(--alert); margin-left:auto;" onclick="logout()">Çıkış Yap</button>
             </div>
+            <!-- Çıkış butonu artık mobil hariç en sağda sabit duracak -->
+            <button id="logoutBtn" class="nav-btn" style="color:var(--alert); border-color:var(--alert);" onclick="logout()">Çıkış Yap</button>
         </div>
 
-        <!-- GİRİŞ EKRANI -->
         <div id="authPanel" class="main-content">
             <div class="panel glass-panel" style="margin-top: 50px;">
                 <h1 style="font-size: 32px; font-weight: 900; color: var(--accent-gold); margin-bottom: 5px; text-shadow: 0 0 20px rgba(255,211,42,0.4);">NOVA</h1>
@@ -239,7 +275,6 @@
             </div>
         </div>
 
-        <!-- İLİŞKİ CV'Sİ (Kutucuklu Tasarım) -->
         <div id="cvPanel" class="main-content hidden">
             <h2 style="margin-bottom: 20px;">Gizli İlişki CV'm</h2>
             <form id="cvForm">
@@ -249,7 +284,7 @@
                         <select id="cv_humor"><option value="Yüksek">Yüksek</option><option value="Orta">Orta</option><option value="Düşük">Önemli Değil</option></select>
                         <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
                         <div class="slider-wrapper"><input type="range" id="w_humor" min="0" max="100" value="50"><span id="lbl_w_humor" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
-                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından -25 ceza kesilir."><input type="checkbox" id="rf_humor"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından bağımsız olarak acımasızca -25 ceza kesilir."><input type="checkbox" id="rf_humor"> 🚨 Bu kriter kırmızı çizgimdir</label>
                     </div>
                 </div>
                 <div class="criteria-card">
@@ -258,7 +293,7 @@
                         <select id="cv_finance"><option value="Birikim Odaklı">Birikim Odaklı</option><option value="Dengeli">Dengeli</option><option value="Savurgan">Farketmez</option></select>
                         <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
                         <div class="slider-wrapper"><input type="range" id="w_finance" min="0" max="100" value="50"><span id="lbl_w_finance" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
-                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından -25 ceza kesilir."><input type="checkbox" id="rf_finance"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından bağımsız olarak acımasızca -25 ceza kesilir."><input type="checkbox" id="rf_finance"> 🚨 Bu kriter kırmızı çizgimdir</label>
                     </div>
                 </div>
                 <div class="criteria-card">
@@ -267,7 +302,7 @@
                         <select id="cv_child"><option value="İstiyor">İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Kararsız</option></select>
                         <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
                         <div class="slider-wrapper"><input type="range" id="w_child" min="0" max="100" value="50"><span id="lbl_w_child" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
-                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından -25 ceza kesilir."><input type="checkbox" id="rf_child"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından bağımsız olarak acımasızca -25 ceza kesilir."><input type="checkbox" id="rf_child"> 🚨 Bu kriter kırmızı çizgimdir</label>
                     </div>
                 </div>
                 <div class="criteria-card">
@@ -276,7 +311,7 @@
                         <select id="cv_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select>
                         <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
                         <div class="slider-wrapper"><input type="range" id="w_communication" min="0" max="100" value="50"><span id="lbl_w_communication" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
-                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından -25 ceza kesilir."><input type="checkbox" id="rf_communication"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından bağımsız olarak acımasızca -25 ceza kesilir."><input type="checkbox" id="rf_communication"> 🚨 Bu kriter kırmızı çizgimdir</label>
                     </div>
                 </div>
                 <div class="criteria-card">
@@ -285,14 +320,13 @@
                         <select id="cv_habit"><option value="Kullanmıyor">Kullanmıyor</option><option value="Sosyal İçici">Sosyal İçici</option><option value="Kullanıyor">Sorun Değil</option></select>
                         <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
                         <div class="slider-wrapper"><input type="range" id="w_habit" min="0" max="100" value="50"><span id="lbl_w_habit" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
-                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından -25 ceza kesilir."><input type="checkbox" id="rf_habit"> 🚨 Bu kriter kırmızı çizgimdir</label>
+                        <label class="redflag-wrapper" title="Zıtlık durumunda uyum puanından bağımsız olarak acımasızca -25 ceza kesilir."><input type="checkbox" id="rf_habit"> 🚨 Bu kriter kırmızı çizgimdir</label>
                     </div>
                 </div>
                 <button type="submit" class="btn-master" style="margin-top:10px;">Değişiklikleri Algoritmaya Kaydet</button>
             </form>
         </div>
 
-        <!-- DASHBOARD & ADAY LİSTESİ -->
         <div id="dashboardPanel" class="main-content hidden">
             <h2>Gözlem Laboratuvarı <button class="nav-btn" style="border-color:var(--accent-gold); color:var(--accent-gold);" onclick="toggleAddDateForm()">+ Yeni Aday Ekle</button></h2>
             
@@ -314,14 +348,12 @@
             <div id="datesContainer"></div>
         </div>
 
-        <!-- DİĞER PANELLER (Mevcut haliyle aynı bırakıldı) -->
         <div id="journalPanel" class="main-content hidden"><h2>İlişki Günlüğü <span style="font-size:10px; color:var(--premium);">💎 Premium Analiz</span></h2><div class="form-group"><textarea id="journalInput" rows="3" placeholder="Bugün buluşmada hissettiğim şey..."></textarea><button class="btn-master" style="padding: 10px;" onclick="saveJournal()">Günlüğe Kaydet</button></div><div id="journalList" style="margin-top: 20px;"></div></div>
         <div id="coachPanel" class="main-content hidden"><h2>Nova Karar Destek Asistanı</h2><div class="chat-box" id="coachingChatBox"></div><div style="display:flex; gap:8px;"><input type="text" id="coachInput" style="flex-grow:1; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; padding:12px; color:white; outline:none;" placeholder="Senaryoyu girin..."><button class="btn-master" style="width:45px; height:45px; padding:0;" onclick="sendCoachingMsg()">➤</button></div></div>
         <div id="trendsPanel" class="main-content hidden"><h2>Farkındalık Trendleri</h2><div class="panel glass-panel" style="text-align:left;"><p>Veri Havuzu: <span id="trend_total" style="font-weight:bold; color:white;">0</span> Aday</p><div class="criteria-card" style="margin-top:15px;"><h4>Makro Analiz</h4><p id="trend_macro_text" style="font-size:13px; color:var(--text-main); margin-top:5px;"></p></div></div></div>
         <div id="couplePanel" class="main-content hidden"><h2>Çift Laboratuvarı <span style="font-size:10px; color:var(--premium);">💎 Premium</span></h2><div class="panel glass-panel" style="text-align:left;"><div class="form-group"><label>Partnerinin Finansal Beklentisi</label><select id="cp_finance"><option value="Birikim Odaklı">Birikim Odaklı</option><option value="Dengeli">Dengeli</option><option value="Savurgan">Savurgan</option></select></div><div class="form-group"><label>Partnerinin Çocuk İsteği</label><select id="cp_child"><option value="İstiyor">İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Kararsız</option></select></div><div class="form-group"><label>Partnerinin İletişim Beklentisi</label><select id="cp_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select></div><button class="btn-master btn-premium" onclick="runCoupleAnalysis()">Çapraz Analizi Başlat</button></div><div id="coupleReportResult" class="panel glass-panel hidden" style="margin-top:15px; border-color:var(--premium); text-align:left;"><h4 style="color:var(--premium);">Çift Teşhisi</h4><p id="coupleReportText" style="font-size:13px; line-height:1.5; color:white; margin-top:5px;"></p></div></div>
     </div>
 
-    <!-- GLOBAL RAPOR LAYER -->
     <div id="analysisReportLayer">
         <div class="report-header">
             <h3 id="repName" style="font-size:20px; font-weight:900; color:white;">Analiz Raporu</h3>
@@ -439,7 +471,6 @@
                 if(dates.length === 0) { container.innerHTML = `<p style="color:var(--text-muted);">Aday bulunmuyor.</p>`; return; }
                 dates.forEach(d => {
                     let lowClass = d.score < 50 ? 'low-score' : '';
-                    // YENİ EKLENEN: SİLME BUTONU
                     container.innerHTML += `
                     <div class="date-card">
                         <div class="date-info">
@@ -455,7 +486,6 @@
             } else if(res.status === 401) logout();
         }
 
-        // YENİ EKLENEN: SİLME FONKSİYONU
         async function deleteDate(dateId) {
             if(!confirm("Bu adayı laboratuvardan silmek istediğine emin misin?")) return;
             let res = await fetch(`/api/dates/${dateId}`, { method: 'DELETE', headers: getAuthHeaders() });
