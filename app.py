@@ -95,6 +95,53 @@ def handle_cv(user_id):
         result = {r.criteria_key: {"expected": r.expected_value, "importance": r.importance, "is_red_flag": r.is_red_flag} for r in records}
         return jsonify(result)
 
+
+# --- YENİ EKLENEN: NOVA MATEMATİKSEL PUANLAMA MOTORU ---
+def calculate_match_score(user_cv_records, date_attributes):
+    if not user_cv_records or not date_attributes: 
+        return 50 # Veri yoksa ortalama puan
+
+    total_weight = 0
+    earned_score = 0
+    red_flag_penalty = False
+
+    cv_dict = {cv.criteria_key: cv for cv in user_cv_records}
+
+    for key, actual_val in date_attributes.items():
+        if key in cv_dict:
+            cv = cv_dict[key]
+            expected_val = cv.expected_value
+            weight = cv.importance
+            total_weight += weight
+
+            # Uyum Yüzdesini Belirleme
+            match_rate = 0.0
+            if expected_val == actual_val or expected_val in ["Farketmez", "Önemli Değil", "Sorun Değil"]:
+                match_rate = 1.0 # Birebir uyum
+            elif actual_val in ["Dengeli", "Orta", "Sosyal İçici", "Kararsız"] or expected_val in ["Dengeli", "Orta", "Sosyal İçici", "Kararsız"]:
+                match_rate = 0.5 # Kısmi (orta yollu) uyum
+            else:
+                match_rate = 0.0 # Tam zıtlık
+
+            earned_score += (weight * match_rate)
+
+            # Kırmızı çizgi kuralı: Kısmi uyum bile yoksa cezayı kes
+            if cv.is_red_flag and match_rate == 0.0:
+                red_flag_penalty = True
+
+    if total_weight == 0: 
+        return 50
+
+    final_score = int((earned_score / total_weight) * 100)
+
+    # Kırmızı çizgi cezası (-25 puan)
+    if red_flag_penalty:
+        final_score -= 25
+
+    # Puanı 0 ile 100 arasına hapsediyoruz
+    return max(0, min(100, final_score))
+
+
 # --- DATE (ADAY) LİSTESİ API ---
 @app.route('/api/dates', methods=['POST'])
 @jwt_required()
@@ -106,18 +153,27 @@ def add_date():
         return jsonify({"error": "Yetkisiz erişim."}), 403
 
     db = SessionLocal()
+    
+    # 1. Kullanıcının CV'sini veritabanından çekiyoruz
+    user_cv = db.query(RelationshipCV).filter_by(user_id=user_id).all()
+    
+    # 2. Adayın özelliklerini form verisinden alıyoruz
+    attrs = data.get('attributes', {})
+    
+    # 3. KİLİT NOKTA: Algoritmayı çalıştırıp puanı hesaplıyoruz!
+    calculated_score = calculate_match_score(user_cv, attrs)
+    
     new_profile = DateProfile(
         user_id=user_id,
         name=data.get('name'),
         job_or_education=data.get('job_or_education'),
         notes=data.get('notes'),
-        score=0 
+        score=calculated_score # ARTIK 0 DEĞİL, GERÇEK PUAN YAZILIYOR
     )
     db.add(new_profile)
     db.commit()
     db.refresh(new_profile)
     
-    attrs = data.get('attributes', {})
     for key, val in attrs.items():
         new_attr = DateAttribute(
             date_id=new_profile.id,
@@ -127,12 +183,10 @@ def add_date():
         db.add(new_attr)
     
     db.commit()
-    
-    # KİLİT NOKTA: Hata almamak için ID'yi veritabanı kapanmadan önce kopyalıyoruz
     kaydedilen_id = new_profile.id
-    
     db.close()
-    return jsonify({"message": "Date başarıyla eklendi", "date_id": kaydedilen_id})
+    
+    return jsonify({"message": "Date başarıyla eklendi", "date_id": kaydedilen_id, "score": calculated_score})
 
 @app.route('/api/dates/list/<user_id>', methods=['GET'])
 @jwt_required()
@@ -152,11 +206,16 @@ def analyze_date(user_id, date_id):
     if get_jwt_identity() != user_id:
         return jsonify({"error": "Yetkisiz erişim."}), 403
 
+    # Gecici Analiz (İleride Groq Yapay Zeka buraya entegre edilecek)
+    db = SessionLocal()
+    profile = db.query(DateProfile).filter_by(id=date_id).first()
+    db.close()
+    
     return jsonify({
-        "final_score": 85,
-        "nova_message": "Nova: Veritabanı profili alındı ve analiz geçici olarak başarılı raporlandı.",
-        "pros": ["Finansal beklentiler dengeli"],
-        "cons": ["İletişim alışkanlıkları izlenmeli"],
+        "final_score": profile.score if profile else 0,
+        "nova_message": f"Nova: Algoritma {profile.name} için ağırlıklı matematiksel analizi tamamladı. {'Uyum düzeyi ümit verici.' if profile.score > 60 else 'Riskli alanlar mevcut, dikkatli olunmalı.'}",
+        "pros": ["Matematiksel eşleşme tamamlandı"],
+        "cons": ["Yapay zeka derin analizi bekleniyor"],
         "critical_conflicts": []
     })
 
