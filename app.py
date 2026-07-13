@@ -206,17 +206,76 @@ def analyze_date(user_id, date_id):
     if get_jwt_identity() != user_id:
         return jsonify({"error": "Yetkisiz erişim."}), 403
 
-    # Gecici Analiz (İleride Groq Yapay Zeka buraya entegre edilecek)
     db = SessionLocal()
+    # Adayın genel bilgilerini çek
     profile = db.query(DateProfile).filter_by(id=date_id).first()
+    
+    if not profile:
+        db.close()
+        return jsonify({"error": "Kayıt bulunamadı"}), 404
+        
+    # Senin CV'ni ve adayın özelliklerini çek
+    user_cv = db.query(RelationshipCV).filter_by(user_id=user_id).all()
+    date_attrs = db.query(DateAttribute).filter_by(date_id=date_id).all()
+    
+    cv_dict = {cv.criteria_key: cv for cv in user_cv}
+    attr_dict = {attr.criteria_key: attr.actual_value for attr in date_attrs}
+    
+    pros = []
+    cons = []
+    critical_conflicts = []
+    
+    # Veritabanındaki İngilizce anahtarları Türkçe okunabilir metinlere çeviriyoruz
+    key_names = {
+        'humor': 'Mizah Anlayışı',
+        'finance': 'Finansal Tutum',
+        'child': 'Çocuk İsteği',
+        'communication': 'İletişim Sıklığı',
+        'habit': 'Zararlı Alışkanlıklar'
+    }
+
+    # Satır satır CV ve Aday karşılaştırması
+    for key, actual_val in attr_dict.items():
+        if key in cv_dict:
+            cv = cv_dict[key]
+            expected_val = cv.expected_value
+            readable_key = key_names.get(key, key)
+            
+            # Tam uyum veya senin için fark etmeyen durumlar (Green Flags)
+            if expected_val == actual_val or expected_val in ["Farketmez", "Önemli Değil", "Sorun Değil"]:
+                pros.append(f"{readable_key} tam istediğin gibi ({actual_val})")
+            
+            # Kısmi uyum / Orta yol gereken durumlar (Eksiler/Riskler)
+            elif actual_val in ["Dengeli", "Orta", "Sosyal İçici", "Kararsız"] or expected_val in ["Dengeli", "Orta", "Sosyal İçici", "Kararsız"]:
+                cons.append(f"{readable_key} konusunda orta yolu bulmanız gerekebilir (Sen: {expected_val} / O: {actual_val})")
+            
+            # Tam zıtlık durumları
+            else:
+                msg = f"{readable_key} dinamikleri tamamen zıt (Sen: {expected_val} / O: {actual_val})"
+                
+                # Eğer bu zıtlık senin kırmızı çizginse, acil durum listesine at!
+                if cv.is_red_flag:
+                    critical_conflicts.append(msg)
+                else:
+                    cons.append(msg)
+    
     db.close()
     
+    # Nova'nın puana göre değişen dinamik teşhis mesajı
+    nova_msg = f"Nova: {profile.name} için mantıksal analiz tamamlandı. "
+    if profile.score >= 80:
+        nova_msg += "Kağıt üzerinde harika bir uyum! Bu potansiyeli mutlaka değerlendirmelisin."
+    elif profile.score >= 50:
+        nova_msg += "Ortalama bir eşleşme. Kırmızı çizgilere ve aranızdaki farklılıklara dikkat ederek ilerleyebilirsin."
+    else:
+        nova_msg += "Uyum seviyesi tehlikeli derecede düşük. Beklentilerinle ciddi oranda çelişiyor, çok dikkatli ol."
+
     return jsonify({
-        "final_score": profile.score if profile else 0,
-        "nova_message": f"Nova: Algoritma {profile.name} için ağırlıklı matematiksel analizi tamamladı. {'Uyum düzeyi ümit verici.' if profile.score > 60 else 'Riskli alanlar mevcut, dikkatli olunmalı.'}",
-        "pros": ["Matematiksel eşleşme tamamlandı"],
-        "cons": ["Yapay zeka derin analizi bekleniyor"],
-        "critical_conflicts": []
+        "final_score": profile.score,
+        "nova_message": nova_msg,
+        "pros": pros if pros else ["Belirgin bir güçlü yön saptanamadı."],
+        "cons": cons if cons else ["Her şey yolunda görünüyor, belirgin bir pürüz yok."],
+        "critical_conflicts": critical_conflicts
     })
 
 # --- GÜNLÜK, KOÇLUK VE TRENDLER API ---
