@@ -118,7 +118,13 @@
         .chat-user { align-self: flex-end; background: var(--accent-gold); color: #0a0c14; font-weight: 500; border-bottom-right-radius: 2px; }
         .chat-nova { align-self: flex-start; background: rgba(0,0,0,0.4); color: white; border: 1px solid var(--border-color); border-bottom-left-radius: 2px; }
 
-        #onboardingLayer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-main); z-index: 999999; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        /* 🚨 DÜZELTME 1: MOBİLDE KAYDIRMA (SCROLL) SORUNU ÇÖZÜLDÜ 🚨 */
+        #onboardingLayer { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; 
+            background: var(--bg-main); z-index: 999999; display: none; 
+            flex-direction: column; align-items: center; 
+            padding: 40px 20px; overflow-y: auto; 
+        }
         #onboardingLayer.active { display: flex !important; }
         .wizard-step { display: none; animation: fadeIn 0.4s ease-in-out; }
         .wizard-step.active { display: block; text-align: center;}
@@ -129,7 +135,6 @@
         .progress-container { width: 100%; background: var(--bg-input); height: 6px; border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
         .progress-bar { height: 100%; background: var(--accent-gold); width: 25%; transition: width 0.3s; }
         
-        /* 🚨 YENİ: GLOBAL DİNAMİK MODAL TASARIMI 🚨 */
         .custom-alert-layer {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
@@ -170,7 +175,6 @@
 </head>
 <body>
 
-    <!-- 🚨 YENİ: GLOBAL DİNAMİK AÇILIR PENCERE (MODAL) 🚨 -->
     <div id="globalCustomModal" class="custom-alert-layer">
         <div class="custom-alert-box glass-panel">
             <div id="modalIcon" class="custom-alert-icon">🔔</div>
@@ -184,7 +188,8 @@
     </div>
 
     <div id="onboardingLayer">
-        <div class="glass-panel" style="padding: 40px; border-radius: 20px; max-width: 500px; width: 100%;">
+        <!-- 🚨 DÜZELTME 1: margin: auto eklenerek içerik ortalandı ve taşma engellendi 🚨 -->
+        <div class="glass-panel" style="padding: 40px; border-radius: 20px; max-width: 500px; width: 100%; margin: auto;">
             <div class="progress-container"><div class="progress-bar" id="wizardProgress"></div></div>
             <form id="wizardForm">
                 <div class="wizard-step active" id="step1">
@@ -379,14 +384,12 @@
         <div class="report-section glass-panel"><h4 style="color:var(--success);">✅ Güçlü Yönler (Green Flags)</h4><div id="repProsList"></div></div>
         <div class="report-section glass-panel"><h4 style="color:var(--text-muted);">⚠️ Risk Değerlendirmeleri (Eksiler)</h4><div id="repConsList"></div></div>
         
-        <!-- YENİ: PDF Butonundaki alert de özel modala bağlandı -->
         <button class="btn-master btn-premium" onclick="customAlert('Detaylı PDF Olarak Dışa Aktar özelliği Premium üyelere özeldir.', '💎 Premium Özellik', '💎')">📄 Detaylı PDF Raporunu İndir 💎</button>
     </div>
 
     <script>
         let currentUserId = localStorage.getItem('ri_user_id');
 
-        // 🚨 YENİ EKLENEN: GLOBAL DİNAMİK AÇILIR PENCERE (MODAL) YÖNETİCİSİ 🚨
         function showCustomModal(title, text, icon, isConfirm = false) {
             return new Promise((resolve) => {
                 document.getElementById('modalTitle').innerText = title;
@@ -397,14 +400,12 @@
                 const btnNo = document.getElementById('modalBtnNo');
                 const layer = document.getElementById('globalCustomModal');
                 
-                // Eğer bu bir Onay/İptal (Confirm) sorusuysa
                 if(isConfirm) {
                     btnNo.classList.remove('hidden');
                     document.getElementById('modalTitle').style.color = "var(--alert)";
                     btnYes.innerText = "Evet, Sil";
                     btnYes.style.background = "linear-gradient(135deg, var(--alert), #c0392b)";
                 } 
-                // Sadece bilgi (Alert) veriyorsa
                 else {
                     btnNo.classList.add('hidden');
                     document.getElementById('modalTitle').style.color = "var(--accent-gold)";
@@ -427,12 +428,9 @@
             });
         }
         
-        // Hızlı Kullanım Kısayolları
         async function customAlert(text, title="Bildirim", icon="🔔") { await showCustomModal(title, text, icon, false); }
         async function customConfirm(text, title="Onay Gerekli", icon="❓") { return await showCustomModal(title, text, icon, true); }
 
-
-        // Kırmızı Çizgi İkonu Tıklama Olayı (Eski alert değiştirildi)
         function showInfoAlert(e) {
             e.preventDefault(); 
             customAlert("Bu konu normalde senin için az önemli olsa bile, eğer adayın özelliği senin beklentinle <strong>TAMAMEN ZITSA</strong>, uyum puanından acımasızca <strong>-25 ceza</strong> kesilir.", "KIRMIZI ÇİZGİ CEZASI", "🚨");
@@ -563,7 +561,6 @@
         }
 
         async function deleteDate(dateId) {
-            // YENİ: Çirkin confirm yerine bizim yeni şık onay kutumuz çalışıyor
             let onay = await customConfirm("Bu adayı laboratuvardan kalıcı olarak silmek istediğine emin misin?", "Adayı Sil", "🗑️");
             if(!onay) return;
             
@@ -609,7 +606,26 @@
         async function saveJournal() { let t = document.getElementById('journalInput').value.trim(); if(!t) return; let res = await fetch(`/api/journal/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({entry_text: t}) }); if(res.ok) { document.getElementById('journalInput').value = ''; loadJournal(); } }
         async function runCoupleAnalysis() { if(!currentUserId) return; document.getElementById('coupleReportResult').classList.remove('hidden'); let p = { finance: document.getElementById('cp_finance').value, child: document.getElementById('cp_child').value, communication: document.getElementById('cp_communication').value }; let res = await fetch(`/api/couple_match/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({partner_cv: p}) }); if(res.ok) { let d = await res.json(); document.getElementById('coupleReportText').innerText = d.nova_report; } }
 
-        window.addEventListener('DOMContentLoaded', () => { if(currentUserId && localStorage.getItem('ri_token')) initApp(); else { currentUserId = null; document.getElementById('authPanel').classList.remove('hidden'); document.getElementById('topNav').classList.add('hidden'); } });
+        // 🚨 DÜZELTME 2: YENİLEME (REFRESH) ESNASINDA ONBOARDING'İ HATIRLAMA 🚨
+        window.addEventListener('DOMContentLoaded', async () => { 
+            if(currentUserId && localStorage.getItem('ri_token')) {
+                try {
+                    let res = await fetch(`/api/cv/${currentUserId}`, { headers: getAuthHeaders() });
+                    if(res.ok) {
+                        let cvData = await res.json();
+                        if(Object.keys(cvData).length === 0) {
+                            startOnboarding(currentUserId, localStorage.getItem('ri_token'));
+                        } else {
+                            initApp();
+                        }
+                    } else { logout(); }
+                } catch(e) { initApp(); }
+            } else { 
+                currentUserId = null; 
+                document.getElementById('authPanel').classList.remove('hidden'); 
+                document.getElementById('topNav').classList.add('hidden'); 
+            } 
+        });
     </script>
 </body>
 </html>
