@@ -1,4 +1,5 @@
 import os
+import time # YENİ EKLENDİ (Sıralama hatasını çözmek için)
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -196,7 +197,6 @@ def list_dates(user_id):
     db.close()
     return jsonify(result)
 
-# YENİ EKLENEN: Aday Silme Fonksiyonu
 @app.route('/api/dates/<date_id>', methods=['DELETE'])
 @jwt_required()
 def delete_date(date_id):
@@ -303,6 +303,7 @@ def handle_journal(user_id):
         db.close()
         return jsonify(result)
 
+# 🚨 DÜZELTİLEN YER: NOVA DEDİKODU ASİSTANI EKRANI 🚨
 @app.route('/api/coaching/<user_id>', methods=['GET', 'POST'])
 @jwt_required()
 def handle_coaching(user_id):
@@ -312,16 +313,34 @@ def handle_coaching(user_id):
     db = SessionLocal()
     if request.method == 'POST':
         msg = request.json.get('message')
+        
+        # 1. Senin mesajını kaydet
         user_msg = NovaCoachingLog(user_id=user_id, message=msg, sender='user')
         db.add(user_msg)
         db.commit()
         
-        nova_msg = NovaCoachingLog(user_id=user_id, message="Nova: Senaryonu kaydettim. Karşılaştığın bu duruma klinik bir zihinle yaklaş.", sender='nova')
+        # 2. SIRALAMA HATASI ÇÖZÜMÜ: Nova mesajı yazmadan önce milisaniyelik gecikme yaratıyoruz.
+        time.sleep(0.1) 
+        
+        # 3. MİNİ YAPAY ZEKA (Kelime Avcısı)
+        msg_lower = msg.lower()
+        if "analiz" in msg_lower:
+            bot_text = "Nova: Hemen laboratuvar kayıtlarını tarıyorum... Bu kişi kağıt üzerinde potansiyel gösterse de, kırmızı çizgilerinle riskli bir temas içinde olabilir. Temkinli yaklaş. 🕵️‍♀️"
+        elif "yazar mı" in msg_lower or "döner mi" in msg_lower:
+            bot_text = "Nova: İstatistiklere ve senin anlattıklarına göre o mesajın gelme ihtimali düşük. Gelse bile, gerçekten o toksik döngüye tekrar girmek istiyor musun? 💅"
+        elif "engelle" in msg_lower or "sil" in msg_lower:
+            bot_text = "Nova: Hiç durma, hemen engelle. Bu laboratuvarda zayıflığa ve geri vitese yer yok! Temiz bir sayfa açıyoruz. 🛑"
+        else:
+            bot_text = "Nova: Seni anlıyorum. Ama olaya biraz daha mantıksal yaklaş. Duygularının seni yönetmesine izin verirsen, o uyum puanları hiçbir işe yaramaz. Sınırlarını koru! 🧠"
+        
+        # 4. Nova'nın zekice cevabını kaydet
+        nova_msg = NovaCoachingLog(user_id=user_id, message=bot_text, sender='nova')
         db.add(nova_msg)
         db.commit()
         db.close()
         return jsonify({"message": "Mesaj gönderildi"})
     else:
+        # Veritabanından zaman damgasına göre doğru sırayla çekiyoruz
         logs = db.query(NovaCoachingLog).filter_by(user_id=user_id).order_by(NovaCoachingLog.timestamp.asc()).all()
         result = [{"sender": l.sender, "content": l.message} for l in logs]
         db.close()
@@ -334,15 +353,12 @@ def get_trends(user_id):
         return jsonify({"error": "Yetkisiz erişim."}), 403
 
     db = SessionLocal()
-    # Kullanıcının tüm adaylarını veritabanından çek
     profiles = db.query(DateProfile).filter_by(user_id=user_id).all()
     total = len(profiles)
     
-    # Mizahi ve Analitik Trend Değerlendirmesi
     if total == 0:
         insight = "Laboratuvarda henüz in cin top oynuyor. Birilerini ekle de analiz yapıp biraz dedikodu yapalım! 🕸️🧐"
     else:
-        # Adayların not ortalamasını hesapla
         avg_score = sum(p.score for p in profiles) / total
         
         if avg_score >= 75:
