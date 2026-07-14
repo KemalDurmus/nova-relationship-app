@@ -334,11 +334,29 @@ def get_trends(user_id):
         return jsonify({"error": "Yetkisiz erişim."}), 403
 
     db = SessionLocal()
-    total = db.query(DateProfile).filter_by(user_id=user_id).count()
+    # Kullanıcının tüm adaylarını veritabanından çek
+    profiles = db.query(DateProfile).filter_by(user_id=user_id).all()
+    total = len(profiles)
+    
+    # Mizahi ve Analitik Trend Değerlendirmesi
+    if total == 0:
+        insight = "Laboratuvarda henüz in cin top oynuyor. Birilerini ekle de analiz yapıp biraz dedikodu yapalım! 🕸️🧐"
+    else:
+        # Adayların not ortalamasını hesapla
+        avg_score = sum(p.score for p in profiles) / total
+        
+        if avg_score >= 75:
+            insight = f"Havuzdaki {total} adayın ortalaması %{int(avg_score)}. Helal olsun, standartların yüksek ve kaliteli insanları çekiyorsun! 🥂😎"
+        elif avg_score >= 50:
+            insight = f"Havuzdaki {total} adayın ortalaması %{int(avg_score)}. Ortalama sularda yüzüyoruz. 'İşte bu!' dedirtecek o kişiyi henüz bulamadık ama fena gitmiyoruz. 🤷‍♂️"
+        else:
+            insight = f"Havuzdaki {total} adayın ortalaması %{int(avg_score)}. Usta sen nerede kırmızı çizgilerini ihlal eden (Red Flag) insan varsa mıknatıs gibi çekmişsin! Acil taktik değiştirmemiz lazım, yoksa sinir hastası olacaksın! 🚩😅"
+
     db.close()
+    
     return jsonify({
         "total": total,
-        "macro_insight": "Veri havuzun öğrenme aşamasında. 5 adaydan sonra anlamlı örüntüler sunabileceğim."
+        "macro_insight": insight
     })
 
 
