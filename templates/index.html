@@ -30,7 +30,15 @@
         }
 
         .top-nav { display: flex; align-items: center; border-bottom: 1px solid var(--border-color); width: 100%; padding: 15px 20px;}
-        .nav-logo { font-size: 22px; font-weight: 900; color: var(--accent-gold); letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,211,42,0.3);}
+        
+        /* NOVA LOGO ANİMASYONU */
+        .nav-logo { 
+            font-size: 22px; font-weight: 900; color: var(--accent-gold); letter-spacing: 2px; 
+            text-shadow: 0 0 10px rgba(255,211,42,0.5);
+            animation: glowPulse 3s infinite alternate;
+        }
+        @keyframes glowPulse { 0% { text-shadow: 0 0 5px rgba(255,211,42,0.3); } 100% { text-shadow: 0 0 20px rgba(255,211,42,0.8); } }
+
         .nav-tabs { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
         .nav-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-muted); padding: 10px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .nav-btn:hover { background: rgba(255,255,255,0.05); }
@@ -57,7 +65,7 @@
         .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="password"], .form-group select, .form-group textarea { 
             width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; color: white; outline: none; font-size: 13px; transition: 0.2s;
         }
-        .form-group input:focus, .form-group select:focus { border-color: var(--accent-gold); }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent-gold); box-shadow: 0 0 10px rgba(255,211,42,0.1); }
         
         .slider-info { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; margin-top: 15px; }
         .slider-wrapper { display: flex; align-items: center; gap: 10px; }
@@ -88,10 +96,17 @@
             font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 211, 42, 0.2); transition: 0.2s;
         }
         .btn-master:active { transform: scale(0.98); }
-        .btn-premium { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3); border: 1px solid #c39bd3;}
+        
+        /* PREMIUM BUTON ANİMASYONU */
+        .btn-premium { 
+            background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; 
+            box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3); border: 1px solid #c39bd3;
+            animation: premiumPulse 2s infinite alternate;
+        }
+        @keyframes premiumPulse { 0% { box-shadow: 0 0 5px rgba(155, 89, 182, 0.3); } 100% { box-shadow: 0 0 15px rgba(155, 89, 182, 0.8); } }
         
         .date-card { background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-        .date-card:hover { border-color: var(--accent-gold); transform: translateY(-2px); background: rgba(0,0,0,0.5);}
+        .date-card:hover { border-color: var(--accent-gold); transform: translateY(-2px); background: rgba(0,0,0,0.5); box-shadow: 0 5px 15px rgba(255,211,42,0.1);}
         .date-info { text-align: left; }
         .date-name { font-size: 15px; font-weight: bold; color: white; }
         .date-meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
@@ -118,7 +133,6 @@
         .chat-user { align-self: flex-end; background: var(--accent-gold); color: #0a0c14; font-weight: 500; border-bottom-right-radius: 2px; }
         .chat-nova { align-self: flex-start; background: rgba(0,0,0,0.4); color: white; border: 1px solid var(--border-color); border-bottom-left-radius: 2px; }
 
-        /* 🚨 DÜZELTME 1: MOBİLDE KAYDIRMA (SCROLL) SORUNU ÇÖZÜLDÜ 🚨 */
         #onboardingLayer { 
             position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; 
             background: var(--bg-main); z-index: 999999; display: none; 
@@ -181,32 +195,31 @@
             <div id="modalTitle" class="custom-alert-title">Bilgi</div>
             <div id="modalText" class="custom-alert-text">Mesaj içeriği...</div>
             <div class="modal-buttons">
-                <button id="modalBtnNo" class="btn-master hidden" style="background: rgba(255,255,255,0.1); color: white; box-shadow: none; margin-top:0;">İptal</button>
-                <button id="modalBtnYes" class="btn-master" style="margin-top:0;">Tamam</button>
+                <button id="modalBtnNo" class="btn-master hidden" style="background: rgba(255,255,255,0.1); color: white; box-shadow: none; margin-top:0;">Vazgeç</button>
+                <button id="modalBtnYes" class="btn-master" style="margin-top:0;">Anladım</button>
             </div>
         </div>
     </div>
 
     <div id="onboardingLayer">
-        <!-- 🚨 DÜZELTME 1: margin: auto eklenerek içerik ortalandı ve taşma engellendi 🚨 -->
         <div class="glass-panel" style="padding: 40px; border-radius: 20px; max-width: 500px; width: 100%; margin: auto;">
             <div class="progress-container"><div class="progress-bar" id="wizardProgress"></div></div>
             <form id="wizardForm">
                 <div class="wizard-step active" id="step1">
                     <div class="wizard-header">Nova'ya Hoş Geldin</div>
-                    <div class="wizard-desc">Sana doğru teşhisleri koyabilmemiz için öncelikle kendi iç dünyanı algoritmamıza tanıtman gerekiyor.</div>
-                    <button type="button" class="btn-master" onclick="nextStep(2)">CV'mi Oluşturmaya Başla</button>
+                    <div class="wizard-desc">Sana doğru teşhisleri koyabilmemiz için önce ne kadar zor biri olduğunu algoritmamıza tanıtmamız gerekiyor. Dürüst ol! 🕵️‍♀️</div>
+                    <button type="button" class="btn-master" onclick="nextStep(2)">Kuralları Belirlemeye Başla</button>
                 </div>
 
                 <div class="wizard-step" id="step2">
                     <div class="wizard-header">Temel Değerler</div>
-                    <div class="wizard-desc">Finansal tutumlar ve aile planlaması beklentilerini belirle.</div>
+                    <div class="wizard-desc">Hesabı kim ödeyecek ve etrafta minik klonların koşuşturacak mı? Karar ver. 💸👶</div>
                     
                     <div class="criteria-card">
                         <div class="form-group">
                             <label>Finansal Tutum Beklentisi</label>
-                            <select id="wz_finance"><option value="Birikim Odaklı">Birikim Odaklı</option><option value="Dengeli">Dengeli</option><option value="Savurgan">Farketmez</option></select>
-                            <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
+                            <select id="wz_finance"><option value="Birikim Odaklı">Cimri / Birikimci</option><option value="Dengeli">Orta Yollu</option><option value="Savurgan">Para Yenmek İçindir</option></select>
+                            <div class="slider-info">Buna ne kadar takıntılısın? (Ağırlık Puanı)</div>
                             <div class="slider-wrapper"><input type="range" id="wz_w_finance" min="0" max="100" value="50"><span id="lbl_wz_w_finance" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
                             <label class="redflag-wrapper"><input type="checkbox" id="wz_rf_finance"> 🚨 Bu kriter kırmızı çizgimdir <span class="info-icon" onclick="showInfoAlert(event)">?</span></label>
                         </div>
@@ -215,30 +228,30 @@
                     <div class="criteria-card">
                         <div class="form-group">
                             <label>Çocuk İsteği</label>
-                            <select id="wz_child"><option value="İstiyor">İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Kararsız</option></select>
-                            <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
+                            <select id="wz_child"><option value="İstiyor">Kesin İstiyor</option><option value="İstemiyor">Evden Uzak Tutsun</option><option value="Kararsız">Zaman Gösterir</option></select>
+                            <div class="slider-info">Buna ne kadar takıntılısın? (Ağırlık Puanı)</div>
                             <div class="slider-wrapper"><input type="range" id="wz_w_child" min="0" max="100" value="50"><span id="lbl_wz_w_child" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
                             <label class="redflag-wrapper"><input type="checkbox" id="wz_rf_child"> 🚨 Bu kriter kırmızı çizgimdir <span class="info-icon" onclick="showInfoAlert(event)">?</span></label>
                         </div>
                     </div>
 
                     <div class="wizard-nav">
-                        <button type="button" class="btn-outline" onclick="nextStep(1)">Geri</button>
-                        <button type="button" class="btn-master" onclick="nextStep(3)" style="width: auto; flex:1;">Sonraki Adım</button>
+                        <button type="button" class="btn-outline" onclick="nextStep(1)">Geri Vites</button>
+                        <button type="button" class="btn-master" onclick="nextStep(3)" style="width: auto; flex:1;">Sonraki Aşama</button>
                     </div>
                 </div>
 
                 <div class="wizard-step" id="step3">
                     <div class="wizard-header">Yaşam Tarzı</div>
-                    <div class="wizard-desc">Sosyal dinamikler ve günlük alışkanlıklarını dürüstçe işaretle.</div>
+                    <div class="wizard-desc">Seni ne eğlendirir ve kendine ne kadar zarar veriyorsun? 🚬🍷</div>
                     
-                    <div class="criteria-card"><div class="form-group"><label>Mizah Anlayışı</label><select id="wz_humor"><option value="Yüksek">Yüksek</option><option value="Orta">Orta</option><option value="Düşük">Önemli Değil</option></select><div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div><div class="slider-wrapper"><input type="range" id="wz_w_humor" min="0" max="100" value="50"><span id="lbl_wz_w_humor" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper"><input type="checkbox" id="wz_rf_humor"> 🚨 Bu kırmızı çizgimdir <span class="info-icon" onclick="showInfoAlert(event)">?</span></label></div></div>
-                    <div class="criteria-card"><div class="form-group"><label>Zararlı Alışkanlıklar</label><select id="wz_habit"><option value="Kullanmıyor">Kullanmıyor</option><option value="Sosyal İçici">Sosyal İçici</option><option value="Kullanıyor">Sorun Değil</option></select><div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div><div class="slider-wrapper"><input type="range" id="wz_w_habit" min="0" max="100" value="50"><span id="lbl_wz_w_habit" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper"><input type="checkbox" id="wz_rf_habit"> 🚨 Bu kırmızı çizgimdir <span class="info-icon" onclick="showInfoAlert(event)">?</span></label></div></div>
-                    <div class="criteria-card"><div class="form-group"><label>İletişim Sıklığı</label><select id="wz_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select><div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div><div class="slider-wrapper"><input type="range" id="wz_w_communication" min="0" max="100" value="50"><span id="lbl_wz_w_communication" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper"><input type="checkbox" id="wz_rf_communication"> 🚨 Bu kırmızı çizgimdir <span class="info-icon" onclick="showInfoAlert(event)">?</span></label></div></div>
+                    <div class="criteria-card"><div class="form-group"><label>Mizah Anlayışı</label><select id="wz_humor"><option value="Yüksek">Zeka Küpü</option><option value="Orta">Gülümsetse Yeter</option><option value="Düşük">Duvar Gibi Olabilir</option></select><div class="slider-info">Buna ne kadar takıntılısın?</div><div class="slider-wrapper"><input type="range" id="wz_w_humor" min="0" max="100" value="50"><span id="lbl_wz_w_humor" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper"><input type="checkbox" id="wz_rf_humor"> 🚨 Bu kırmızı çizgimdir <span class="info-icon" onclick="showInfoAlert(event)">?</span></label></div></div>
+                    <div class="criteria-card"><div class="form-group"><label>Zararlı Alışkanlıklar</label><select id="wz_habit"><option value="Kullanmıyor">Yeşilaycı</option><option value="Sosyal İçici">Ortamda Eşlik Eder</option><option value="Kullanıyor">Kendi Kararı</option></select><div class="slider-info">Buna ne kadar takıntılısın?</div><div class="slider-wrapper"><input type="range" id="wz_w_habit" min="0" max="100" value="50"><span id="lbl_wz_w_habit" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper"><input type="checkbox" id="wz_rf_habit"> 🚨 Bu kırmızı çizgimdir <span class="info-icon" onclick="showInfoAlert(event)">?</span></label></div></div>
+                    <div class="criteria-card"><div class="form-group"><label>İletişim Sıklığı</label><select id="wz_communication"><option value="Sık Görüşme">Yapışık İkizler</option><option value="Dengeli">Nefes Aldırsın</option><option value="Mesafeli">Senede Bir Görüşsek Yeter</option></select><div class="slider-info">Buna ne kadar takıntılısın?</div><div class="slider-wrapper"><input type="range" id="wz_w_communication" min="0" max="100" value="50"><span id="lbl_wz_w_communication" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div><label class="redflag-wrapper"><input type="checkbox" id="wz_rf_communication"> 🚨 Bu kırmızı çizgimdir <span class="info-icon" onclick="showInfoAlert(event)">?</span></label></div></div>
                     
                     <div class="wizard-nav">
-                        <button type="button" class="btn-outline" onclick="nextStep(2)">Geri</button>
-                        <button type="button" class="btn-master" onclick="finishOnboarding()" style="width: auto; flex:1;">Profili Kaydet</button>
+                        <button type="button" class="btn-outline" onclick="nextStep(2)">Geri Vites</button>
+                        <button type="button" class="btn-master" onclick="finishOnboarding()" style="width: auto; flex:1;">Sisteme Mühürle</button>
                     </div>
                 </div>
             </form>
@@ -254,45 +267,45 @@
                 <button id="tabCoachBtn" class="nav-btn" onclick="switchTab('coach')">Koçluk</button>
                 <button id="tabJournalBtn" class="nav-btn" onclick="switchTab('journal')">Günlük</button>
                 <button id="tabTrendsBtn" class="nav-btn" onclick="switchTab('trends')">Trendler</button>
-                <button id="tabCoupleBtn" class="nav-btn" style="color:var(--premium); border-color:var(--premium);" onclick="switchTab('couple')">Çift Analizi</button>
+                <button id="tabCoupleBtn" class="nav-btn btn-premium" style="margin:0; padding:10px 14px;" onclick="switchTab('couple')">Çift Analizi</button>
             </div>
-            <button id="logoutBtn" class="nav-btn" style="color:var(--alert); border-color:var(--alert);" onclick="logout()">Çıkış Yap</button>
+            <button id="logoutBtn" class="nav-btn" style="color:var(--alert); border-color:var(--alert);" onclick="logout()">Sistemden Çık</button>
         </div>
 
         <div id="authPanel" class="main-content">
             <div class="panel glass-panel" style="margin-top: 50px;">
-                <h1 style="font-size: 32px; font-weight: 900; color: var(--accent-gold); margin-bottom: 5px; text-shadow: 0 0 20px rgba(255,211,42,0.4);">NOVA</h1>
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 30px; letter-spacing: 1px;">RELATIONSHIP INTELLIGENCE</p>
+                <h1 style="font-size: 36px; font-weight: 900; color: var(--accent-gold); margin-bottom: 5px; text-shadow: 0 0 20px rgba(255,211,42,0.6); animation: glowPulse 2s infinite alternate;">NOVA</h1>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 30px; letter-spacing: 1px;">AŞK HAYATININ SOĞUKKANLI YARGIÇI</p>
                 
                 <form id="loginForm">
-                    <div class="form-group"><label>E-posta</label><input type="email" id="logEmail" required></div>
-                    <div class="form-group"><label>Şifre</label><input type="password" id="logPassword" required></div>
-                    <button type="submit" class="btn-master">Sisteme Giriş Yap</button>
+                    <div class="form-group"><label>Gizli Ajan E-postası</label><input type="email" id="logEmail" placeholder="senin@mailin.com" required></div>
+                    <div class="form-group"><label>Şifre</label><input type="password" id="logPassword" placeholder="Eski sevgilinin adını koymadın umarım..." required></div>
+                    <button type="submit" class="btn-master">Laboratuvara Gir</button>
                     <div style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">
-                        Laboratuvara katılmadın mı? <a href="#" onclick="toggleForms()" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">Kayıt Ol</a>
+                        Laboratuvara yabancı mısın? <a href="#" onclick="toggleForms()" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">Hemen Kayıt Ol</a>
                     </div>
                 </form>
 
                 <form id="registerForm" class="hidden">
-                    <div class="form-group"><label>Görünen İsim (Kod Adı)</label><input type="text" id="regName" required></div>
-                    <div class="form-group"><label>E-posta</label><input type="email" id="regEmail" required></div>
-                    <div class="form-group"><label>Şifre</label><input type="password" id="regPassword" required></div>
-                    <button type="submit" class="btn-master">Yeni Laboratuvar Kur</button>
+                    <div class="form-group"><label>Sistemdeki Kod Adın</label><input type="text" id="regName" placeholder="Örn: Yalnız Kovboy" required></div>
+                    <div class="form-group"><label>E-posta</label><input type="email" id="regEmail" placeholder="Spam yollamayacağız, söz." required></div>
+                    <div class="form-group"><label>Şifre</label><input type="password" id="regPassword" placeholder="Güçlü bir şey seç!" required></div>
+                    <button type="submit" class="btn-master">Sözleşmeyi İmzala ve Katıl</button>
                     <div style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">
-                        Zaten hesabın var mı? <a href="#" onclick="toggleForms()" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">Giriş Yap</a>
+                        Zaten içeride misin? <a href="#" onclick="toggleForms()" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">Giriş Yap</a>
                     </div>
                 </form>
             </div>
         </div>
 
         <div id="cvPanel" class="main-content hidden">
-            <h2 style="margin-bottom: 20px;">Gizli İlişki CV'm</h2>
+            <h2 style="margin-bottom: 20px;">Kusursuz Profil Beklentilerin 🎯</h2>
             <form id="cvForm">
                 <div class="criteria-card">
                     <div class="form-group">
-                        <label>Mizah Anlayışı Beklentisi</label>
-                        <select id="cv_humor"><option value="Yüksek">Yüksek</option><option value="Orta">Orta</option><option value="Düşük">Önemli Değil</option></select>
-                        <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
+                        <label>Mizah Anlayışı</label>
+                        <select id="cv_humor"><option value="Yüksek">Zeka Küpü</option><option value="Orta">Gülümsetse Yeter</option><option value="Düşük">Önemli Değil</option></select>
+                        <div class="slider-info">Takıntı Derecesi</div>
                         <div class="slider-wrapper"><input type="range" id="w_humor" min="0" max="100" value="50"><span id="lbl_w_humor" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
                         <label class="redflag-wrapper"><input type="checkbox" id="rf_humor"> 🚨 Bu kriter kırmızı çizgimdir <span class="info-icon" onclick="showInfoAlert(event)">?</span></label>
                     </div>
@@ -300,8 +313,8 @@
                 <div class="criteria-card">
                     <div class="form-group">
                         <label>Finansal Tutum</label>
-                        <select id="cv_finance"><option value="Birikim Odaklı">Birikim Odaklı</option><option value="Dengeli">Dengeli</option><option value="Savurgan">Farketmez</option></select>
-                        <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
+                        <select id="cv_finance"><option value="Birikim Odaklı">Cimri / Birikimci</option><option value="Dengeli">Orta Yollu</option><option value="Savurgan">Para Yenmek İçindir</option></select>
+                        <div class="slider-info">Takıntı Derecesi</div>
                         <div class="slider-wrapper"><input type="range" id="w_finance" min="0" max="100" value="50"><span id="lbl_w_finance" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
                         <label class="redflag-wrapper"><input type="checkbox" id="rf_finance"> 🚨 Bu kriter kırmızı çizgimdir <span class="info-icon" onclick="showInfoAlert(event)">?</span></label>
                     </div>
@@ -309,8 +322,8 @@
                 <div class="criteria-card">
                     <div class="form-group">
                         <label>Çocuk İsteği</label>
-                        <select id="cv_child"><option value="İstiyor">İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Kararsız</option></select>
-                        <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
+                        <select id="cv_child"><option value="İstiyor">Kesin İstiyor</option><option value="İstemiyor">Evden Uzak Tutsun</option><option value="Kararsız">Zaman Gösterir</option></select>
+                        <div class="slider-info">Takıntı Derecesi</div>
                         <div class="slider-wrapper"><input type="range" id="w_child" min="0" max="100" value="50"><span id="lbl_w_child" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
                         <label class="redflag-wrapper"><input type="checkbox" id="rf_child"> 🚨 Bu kriter kırmızı çizgimdir <span class="info-icon" onclick="showInfoAlert(event)">?</span></label>
                     </div>
@@ -318,8 +331,8 @@
                 <div class="criteria-card">
                     <div class="form-group">
                         <label>İletişim Sıklığı</label>
-                        <select id="cv_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select>
-                        <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
+                        <select id="cv_communication"><option value="Sık Görüşme">Yapışık İkizler</option><option value="Dengeli">Nefes Aldırsın</option><option value="Mesafeli">Senede Bir Yeter</option></select>
+                        <div class="slider-info">Takıntı Derecesi</div>
                         <div class="slider-wrapper"><input type="range" id="w_communication" min="0" max="100" value="50"><span id="lbl_w_communication" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
                         <label class="redflag-wrapper"><input type="checkbox" id="rf_communication"> 🚨 Bu kriter kırmızı çizgimdir <span class="info-icon" onclick="showInfoAlert(event)">?</span></label>
                     </div>
@@ -327,64 +340,64 @@
                 <div class="criteria-card">
                     <div class="form-group">
                         <label>Zararlı Alışkanlıklar</label>
-                        <select id="cv_habit"><option value="Kullanmıyor">Kullanmıyor</option><option value="Sosyal İçici">Sosyal İçici</option><option value="Kullanıyor">Sorun Değil</option></select>
-                        <div class="slider-info">Bu kriterin senin için önem derecesi (Ağırlık Puanı)</div>
+                        <select id="cv_habit"><option value="Kullanmıyor">Yeşilaycı</option><option value="Sosyal İçici">Ortamda Eşlik Eder</option><option value="Kullanıyor">Kendi Kararı</option></select>
+                        <div class="slider-info">Takıntı Derecesi</div>
                         <div class="slider-wrapper"><input type="range" id="w_habit" min="0" max="100" value="50"><span id="lbl_w_habit" style="font-size:12px; font-weight:bold; color:var(--accent-gold);">%50</span></div>
                         <label class="redflag-wrapper"><input type="checkbox" id="rf_habit"> 🚨 Bu kriter kırmızı çizgimdir <span class="info-icon" onclick="showInfoAlert(event)">?</span></label>
                     </div>
                 </div>
-                <button type="submit" class="btn-master">Değişiklikleri Algoritmaya Kaydet</button>
+                <button type="submit" class="btn-master">Beynine Kazı (Kaydet)</button>
             </form>
         </div>
 
         <div id="dashboardPanel" class="main-content hidden">
-            <h2>Gözlem Laboratuvarı <button class="nav-btn" style="border-color:var(--accent-gold); color:var(--accent-gold);" onclick="toggleAddDateForm()">+ Yeni Aday Ekle</button></h2>
+            <h2>Denek Havuzu 🔬 <button class="nav-btn" style="border-color:var(--accent-gold); color:var(--accent-gold);" onclick="toggleAddDateForm()">+ Yeni Kurban Ekle</button></h2>
             
             <div id="addDateBox" class="panel glass-panel hidden" style="text-align:left; margin-bottom:20px; border-color:var(--accent-gold);">
-                <h3 style="font-size:15px; margin-bottom:15px; color:white;">Yeni Profil Girişi</h3>
+                <h3 style="font-size:15px; margin-bottom:15px; color:white;">Rapor Fişi</h3>
                 <form id="addDateForm">
-                    <div class="form-group"><label>Aday İsmi / Kod Adı</label><input type="text" id="d_name" required></div>
-                    <div class="form-group"><label>Yaşı & Mesleği</label><input type="text" id="d_job" placeholder="Örn: 22, Mimar"></div>
+                    <div class="form-group"><label>Aday İsmi / Suçlu Kodu</label><input type="text" id="d_name" placeholder="Örn: O yalancı çocuk" required></div>
+                    <div class="form-group"><label>Yaşı & Mesleği</label><input type="text" id="d_job" placeholder="Örn: 24, Yarı Zamanlı CEO"></div>
                     <div style="border-bottom:1px solid var(--border-color); margin:15px 0;"></div>
-                    <div class="form-group"><label>Mizah Seviyesi</label><select id="attr_humor"><option value="Yüksek">Yüksek</option><option value="Orta">Orta</option><option value="Düşük">Düşük</option></select></div>
-                    <div class="form-group"><label>Finansal Davranışı</label><select id="attr_finance"><option value="Birikim Odaklı">Birikim Odaklı</option><option value="Dengeli">Dengeli</option><option value="Savurgan">Savurgan</option></select></div>
-                    <div class="form-group"><label>Çocuk Yaklaşımı</label><select id="attr_child"><option value="İstiyor">İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Kararsız</option></select></div>
-                    <div class="form-group"><label>İletişim Tarzı</label><select id="attr_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select></div>
-                    <div class="form-group"><label>Zararlı Alışkanlık</label><select id="attr_habit"><option value="Kullanmıyor">Kullanmıyor</option><option value="Sosyal İçici">Sosyal İçici</option><option value="Kullanıyor">Kullanıyor</option></select></div>
-                    <div class="form-group"><label>Özel Gözlemler (Notlar)</label><textarea id="d_notes" rows="2"></textarea></div>
-                    <button type="submit" class="btn-master">Kaydet ve Eşleştirme Motorunu Çalıştır</button>
+                    <div class="form-group"><label>Mizahı Nasıldı?</label><select id="attr_humor"><option value="Yüksek">Zeka Küpü</option><option value="Orta">Gülümsetse Yeter</option><option value="Düşük">Duvar</option></select></div>
+                    <div class="form-group"><label>Hesap Öderken Nasıldı?</label><select id="attr_finance"><option value="Birikim Odaklı">Eli Cebine Gitmedi</option><option value="Dengeli">Alman Usulü</option><option value="Savurgan">Hepsini O Ödedi</option></select></div>
+                    <div class="form-group"><label>Çocuk Yaklaşımı</label><select id="attr_child"><option value="İstiyor">Kesin İstiyor</option><option value="İstemiyor">Nefret Ediyor</option><option value="Kararsız">Konuşulmadı/Kararsız</option></select></div>
+                    <div class="form-group"><label>Darlama Seviyesi (İletişim)</label><select id="attr_communication"><option value="Sık Görüşme">Sürekli Yazıyor</option><option value="Dengeli">Normal İnsan Gibi</option><option value="Mesafeli">Görüldü Atıyor</option></select></div>
+                    <div class="form-group"><label>Kötü Alışkanlıklar</label><select id="attr_habit"><option value="Kullanmıyor">Tertemiz</option><option value="Sosyal İçici">Ortamda Var</option><option value="Kullanıyor">Fazlasıyla</option></select></div>
+                    <div class="form-group"><label>Dedikodu & Gözlemler</label><textarea id="d_notes" rows="3" placeholder="Eski sevgilisini mi anlattı? Yemek yerken höpürdetti mi? Bütün kirli çamaşırları buraya dök..."></textarea></div>
+                    <button type="submit" class="btn-master">Kaydet ve Yargılamaya Başla</button>
                 </form>
             </div>
             <div id="datesContainer"></div>
         </div>
 
-        <div id="journalPanel" class="main-content hidden"><h2>İlişki Günlüğü <span style="font-size:10px; color:var(--premium);">💎 Premium Analiz</span></h2><div class="form-group"><textarea id="journalInput" rows="3" placeholder="Bugün buluşmada hissettiğim şey..."></textarea><button class="btn-master" style="padding: 10px;" onclick="saveJournal()">Günlüğe Kaydet</button></div><div id="journalList" style="margin-top: 20px;"></div></div>
+        <div id="journalPanel" class="main-content hidden"><h2>Terapi Günlüğü <span style="font-size:10px; color:var(--premium);">💎 Premium</span></h2><div class="form-group"><textarea id="journalInput" rows="3" placeholder="Sevgili günlük, bugün yine bir kırmızı çizgiyle karşılaştım..."></textarea><button class="btn-master" style="padding: 10px;" onclick="saveJournal()">Sırrını Bana Ver</button></div><div id="journalList" style="margin-top: 20px;"></div></div>
         
         <div id="coachPanel" class="main-content hidden">
-            <h2>Nova Karar Destek Asistanı</h2>
+            <h2>Nova Dedikodu Asistanı 💅</h2>
             <div class="chat-box" id="coachingChatBox"></div>
             <div style="display:flex; gap:8px;">
-                <input type="text" id="coachInput" style="flex-grow:1; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; padding:12px; color:white; outline:none;" placeholder="Senaryoyu girin...">
+                <input type="text" id="coachInput" style="flex-grow:1; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; padding:12px; color:white; outline:none;" placeholder="Nova sence bana tekrar yazar mı? Detayları vereyim...">
                 <button class="btn-master" style="width:45px; height:45px; padding:0; margin-top:0;" onclick="sendCoachingMsg()">➤</button>
             </div>
         </div>
         
-        <div id="trendsPanel" class="main-content hidden"><h2>Farkındalık Trendleri</h2><div class="panel glass-panel" style="text-align:left;"><p>Veri Havuzu: <span id="trend_total" style="font-weight:bold; color:white;">0</span> Aday</p><div class="criteria-card" style="margin-top:15px;"><h4>Makro Analiz</h4><p id="trend_macro_text" style="font-size:13px; color:var(--text-main); margin-top:5px;"></p></div></div></div>
-        <div id="couplePanel" class="main-content hidden"><h2>Çift Laboratuvarı <span style="font-size:10px; color:var(--premium);">💎 Premium</span></h2><div class="panel glass-panel" style="text-align:left;"><div class="form-group"><label>Partnerinin Finansal Beklentisi</label><select id="cp_finance"><option value="Birikim Odaklı">Birikim Odaklı</option><option value="Dengeli">Dengeli</option><option value="Savurgan">Savurgan</option></select></div><div class="form-group"><label>Partnerinin Çocuk İsteği</label><select id="cp_child"><option value="İstiyor">İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Kararsız</option></select></div><div class="form-group"><label>Partnerinin İletişim Beklentisi</label><select id="cp_communication"><option value="Sık Görüşme">Sık Görüşme</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Mesafeli</option></select></div><button class="btn-master btn-premium" onclick="runCoupleAnalysis()">Çapraz Analizi Başlat</button></div><div id="coupleReportResult" class="panel glass-panel hidden" style="margin-top:15px; border-color:var(--premium); text-align:left;"><h4 style="color:var(--premium);">Çift Teşhisi</h4><p id="coupleReportText" style="font-size:13px; line-height:1.5; color:white; margin-top:5px;"></p></div></div>
+        <div id="trendsPanel" class="main-content hidden"><h2>Zalim Gerçekler (Trendler)</h2><div class="panel glass-panel" style="text-align:left;"><p>Toplam Denek: <span id="trend_total" style="font-weight:bold; color:white;">0</span> Aday</p><div class="criteria-card" style="margin-top:15px;"><h4>Nova'nın Yüzüne Vurdukları</h4><p id="trend_macro_text" style="font-size:13px; color:var(--text-main); margin-top:5px; line-height:1.5;"></p></div></div></div>
+        <div id="couplePanel" class="main-content hidden"><h2>Çift Çarpıştırma <span style="font-size:10px; color:var(--premium);">💎 Premium</span></h2><div class="panel glass-panel" style="text-align:left;"><div class="form-group"><label>Onun Finansal Kafası</label><select id="cp_finance"><option value="Birikim Odaklı">Cimri</option><option value="Dengeli">Orta Yollu</option><option value="Savurgan">Para Yenmek İçindir</option></select></div><div class="form-group"><label>Onun Çocuk İsteği</label><select id="cp_child"><option value="İstiyor">Kesin İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Zaman Gösterir</option></select></div><div class="form-group"><label>Onun Darlama Seviyesi</label><select id="cp_communication"><option value="Sık Görüşme">Yapışık</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Görüldücü</option></select></div><button class="btn-master btn-premium" onclick="runCoupleAnalysis()">Simülasyonu Başlat</button></div><div id="coupleReportResult" class="panel glass-panel hidden" style="margin-top:15px; border-color:var(--premium); text-align:left;"><h4 style="color:var(--premium);">Acı Teşhis</h4><p id="coupleReportText" style="font-size:13px; line-height:1.5; color:white; margin-top:5px;"></p></div></div>
     </div>
 
     <div id="analysisReportLayer">
         <div class="report-header">
-            <h3 id="repName" style="font-size:20px; font-weight:900; color:white;">Analiz Raporu</h3>
-            <button class="nav-btn" onclick="closeReportLayer()">✕ Kapat</button>
+            <h3 id="repName" style="font-size:20px; font-weight:900; color:white;">Nova Yargı Raporu</h3>
+            <button class="nav-btn" onclick="closeReportLayer()">✕ Gizle</button>
         </div>
         <div class="report-score-box glass-panel"><h4>Nesnel Uyum Endeksi</h4><div class="report-score-val" id="repScore">%0</div></div>
-        <div class="report-section glass-panel"><h4>Nova Stratejik Teşhis</h4><p id="repNovaMessage" style="font-size:13px; color:white;"></p></div>
-        <div id="repCriticalSection" class="report-section hidden" style="border-color:var(--alert); background:rgba(255,71,87,0.1);"><h4 style="color:var(--alert);">🚨 Kritik Uyuşmazlıklar (Kırmızı Çizgiler)</h4><div id="repCriticalList"></div></div>
-        <div class="report-section glass-panel"><h4 style="color:var(--success);">✅ Güçlü Yönler (Green Flags)</h4><div id="repProsList"></div></div>
-        <div class="report-section glass-panel"><h4 style="color:var(--text-muted);">⚠️ Risk Değerlendirmeleri (Eksiler)</h4><div id="repConsList"></div></div>
+        <div class="report-section glass-panel"><h4>Nova'nın İğneleyici Teşhisi</h4><p id="repNovaMessage" style="font-size:13px; color:white; line-height: 1.5;"></p></div>
+        <div id="repCriticalSection" class="report-section hidden" style="border-color:var(--alert); background:rgba(255,71,87,0.1);"><h4 style="color:var(--alert);">🚨 Uzak Durman Gerekenler (Kırmızı Çizgiler)</h4><div id="repCriticalList"></div></div>
+        <div class="report-section glass-panel"><h4 style="color:var(--success);">✅ Şaşırttı (Green Flags)</h4><div id="repProsList"></div></div>
+        <div class="report-section glass-panel"><h4 style="color:var(--text-muted);">⚠️ Sıkıntı Çıkaracaklar (Eksiler)</h4><div id="repConsList"></div></div>
         
-        <button class="btn-master btn-premium" onclick="customAlert('Detaylı PDF Olarak Dışa Aktar özelliği Premium üyelere özeldir.', '💎 Premium Özellik', '💎')">📄 Detaylı PDF Raporunu İndir 💎</button>
+        <button class="btn-master btn-premium" onclick="customAlert('Bu kurbanın tüm dedikodu ve grafiklerini PDF olarak indirmek Premium bir ayrıcalıktır şekerim.', '💎 Fakir Misin?', '💅')">📄 Utanç Tablosunu PDF İndir 💎</button>
     </div>
 
     <script>
@@ -403,13 +416,13 @@
                 if(isConfirm) {
                     btnNo.classList.remove('hidden');
                     document.getElementById('modalTitle').style.color = "var(--alert)";
-                    btnYes.innerText = "Evet, Sil";
+                    btnYes.innerText = "Evet, Kurtulalım Şundan!";
                     btnYes.style.background = "linear-gradient(135deg, var(--alert), #c0392b)";
                 } 
                 else {
                     btnNo.classList.add('hidden');
                     document.getElementById('modalTitle').style.color = "var(--accent-gold)";
-                    btnYes.innerText = "Tamam";
+                    btnYes.innerText = "Tamam Nova";
                     btnYes.style.background = "linear-gradient(135deg, var(--accent-gold), #e1b12c)";
                 }
                 
@@ -429,11 +442,11 @@
         }
         
         async function customAlert(text, title="Bildirim", icon="🔔") { await showCustomModal(title, text, icon, false); }
-        async function customConfirm(text, title="Onay Gerekli", icon="❓") { return await showCustomModal(title, text, icon, true); }
+        async function customConfirm(text, title="Emin misin?", icon="❓") { return await showCustomModal(title, text, icon, true); }
 
         function showInfoAlert(e) {
             e.preventDefault(); 
-            customAlert("Bu konu normalde senin için az önemli olsa bile, eğer adayın özelliği senin beklentinle <strong>TAMAMEN ZITSA</strong>, uyum puanından acımasızca <strong>-25 ceza</strong> kesilir.", "KIRMIZI ÇİZGİ CEZASI", "🚨");
+            customAlert("Bu konu senin için normalde az önemli görünse bile, eğer kurbanımız seninle <strong>TAMAMEN ZIT</strong> bir cevap verirse, o acımasız <strong>-25 kırmızı çizgi tokatını</strong> yer. Acıma!", "KIRMIZI ÇİZGİ CEZASI", "🚨");
         }
 
         function getAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('ri_token') }; }
@@ -485,10 +498,10 @@
             e.preventDefault();
             let res = await fetch('/api/register', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: document.getElementById('regEmail').value, password: document.getElementById('regPassword').value, display_name: document.getElementById('regName').value})});
             if(res.ok) { 
-                await customAlert("Kayıt işlemi başarılı! Lütfen giriş yapın.", "Harika!", "✅"); 
+                await customAlert("Başarıyla içeri sızdın. Şimdi giriş yap da işimize bakalım.", "Aramıza Katıldın!", "🍸"); 
                 toggleForms(); 
             } else { 
-                await customAlert("Kayıt sırasında bir hata oluştu.", "Hata", "❌"); 
+                await customAlert("Beceremedik. E-posta zaten kayıtlı olabilir.", "Olamaz...", "🤦‍♀️"); 
             }
         });
 
@@ -502,7 +515,7 @@
                 let cvData = await cvCheck.json();
                 if(Object.keys(cvData).length === 0) startOnboarding(currentUserId, data.token); else initApp();
             } else { 
-                customAlert(data.error || "Giriş yapılamadı.", "Giriş Başarısız", "❌"); 
+                customAlert(data.error || "Giriş yapılamadı. Şifreni mi unuttun?", "Kapıda Kaldın", "🚫"); 
             }
         });
 
@@ -525,7 +538,7 @@
             e.preventDefault(); let payload = {};
             ['humor', 'finance', 'child', 'communication', 'habit'].forEach(key => { payload[key] = { expected: document.getElementById(`cv_${key}`).value, importance: document.getElementById(`w_${key}`).value, is_red_flag: document.getElementById(`rf_${key}`).checked }; });
             await fetch(`/api/cv/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({cv: payload}) }); 
-            customAlert("İlişki CV'niz başarıyla kaydedildi ve algoritmaya işlendi.", "Başarılı", "🎯");
+            customAlert("Zorlu standartların başarıyla kaydedildi. Allah karşına çıkacaklara yardım etsin.", "Standartlar Güncellendi", "💅");
         });
 
         document.getElementById('addDateForm').addEventListener('submit', async (e) => {
@@ -542,18 +555,21 @@
             let container = document.getElementById('datesContainer'); container.innerHTML = '';
             if(res.ok) {
                 let dates = await res.json();
-                if(dates.length === 0) { container.innerHTML = `<p style="color:var(--text-muted);">Aday bulunmuyor.</p>`; return; }
+                if(dates.length === 0) { 
+                    container.innerHTML = `<div style="text-align:center; padding:50px 20px; color:var(--text-muted); line-height: 1.6;">Aşk hayatın şu an kurumuş bir çöl gibi... 🌵<br><br>Hemen sağ üstten birilerini ekle de biraz dedikodu yapıp kınayalım!</div>`; 
+                    return; 
+                }
                 dates.forEach(d => {
                     let lowClass = d.score < 50 ? 'low-score' : '';
                     container.innerHTML += `
                     <div class="date-card">
                         <div class="date-info">
                             <div class="date-name">${d.name}</div>
-                            <div class="date-meta">${d.job_or_education || 'Bilgi Yok'}</div>
+                            <div class="date-meta">${d.job_or_education || 'Meslek: Boş İşler Müdürü'}</div>
                         </div>
                         <div class="date-actions">
                             <div class="date-score-badge ${lowClass}" onclick="viewAnalysis('${d.id}', '${d.name}')">%${d.score} Rapor</div>
-                            <button class="btn-delete" onclick="deleteDate('${d.id}')" title="Bu adayı sil">Sil</button>
+                            <button class="btn-delete" onclick="deleteDate('${d.id}')" title="Bu denekten kurtul">Çöpe At</button>
                         </div>
                     </div>`;
                 });
@@ -561,18 +577,18 @@
         }
 
         async function deleteDate(dateId) {
-            let onay = await customConfirm("Bu adayı laboratuvardan kalıcı olarak silmek istediğine emin misin?", "Adayı Sil", "🗑️");
+            let onay = await customConfirm("Onu hayatından ve veritabanımdan kalıcı olarak siliyorum. Kararın kesin mi?", "Bitti Bu İş!", "🗑️");
             if(!onay) return;
             
             let res = await fetch(`/api/dates/${dateId}`, { method: 'DELETE', headers: getAuthHeaders() });
-            if(res.ok) { loadDates(); } else { customAlert("Silme işlemi başarısız.", "Hata", "❌"); }
+            if(res.ok) { loadDates(); } else { customAlert("Bir şeyler ters gitti, sanırım sana yapıştı bırakmıyor.", "Hata", "🙄"); }
         }
 
         async function viewAnalysis(dateId, name) {
             let res = await fetch(`/api/dates/analysis/${currentUserId}/${dateId}`, { headers: getAuthHeaders() });
             if(res.ok) {
                 let data = await res.json();
-                document.getElementById('repName').innerText = `${name} - Analiz Raporu`; document.getElementById('repScore').innerText = `%${data.final_score}`; document.getElementById('repNovaMessage').innerText = data.nova_message;
+                document.getElementById('repName').innerText = `${name} - Karar Raporu`; document.getElementById('repScore').innerText = `%${data.final_score}`; document.getElementById('repNovaMessage').innerText = data.nova_message;
                 document.getElementById('repScore').style.color = data.final_score < 50 ? 'var(--alert)' : 'var(--success)';
                 
                 let prosList = document.getElementById('repProsList'); prosList.innerHTML = ''; data.pros.forEach(p => { prosList.innerHTML += `<div class="report-list-item flag-green">${p}</div>`; });
@@ -593,7 +609,7 @@
                 let box = document.getElementById('coachingChatBox'); 
                 box.innerHTML = ''; 
                 if(msgs.length === 0) {
-                    box.innerHTML = `<div class="chat-msg chat-nova">Nova: Laboratuvara hoş geldin. Kafanı karıştıran bir senaryo varsa aşağıya yaz, birlikte analiz edelim.</div>`;
+                    box.innerHTML = `<div class="chat-msg chat-nova">Nova: Psikoloğun değilim ama ondan çok daha zekiyim. Dökül bakalım, bugün yine kime sinirlendin? 💅🧠</div>`;
                 } else {
                     msgs.forEach(m => { box.innerHTML += `<div class="chat-msg ${m.sender === 'user' ? 'chat-user' : 'chat-nova'}">${m.content}</div>`; }); 
                 }
@@ -606,7 +622,6 @@
         async function saveJournal() { let t = document.getElementById('journalInput').value.trim(); if(!t) return; let res = await fetch(`/api/journal/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({entry_text: t}) }); if(res.ok) { document.getElementById('journalInput').value = ''; loadJournal(); } }
         async function runCoupleAnalysis() { if(!currentUserId) return; document.getElementById('coupleReportResult').classList.remove('hidden'); let p = { finance: document.getElementById('cp_finance').value, child: document.getElementById('cp_child').value, communication: document.getElementById('cp_communication').value }; let res = await fetch(`/api/couple_match/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({partner_cv: p}) }); if(res.ok) { let d = await res.json(); document.getElementById('coupleReportText').innerText = d.nova_report; } }
 
-        // 🚨 DÜZELTME 2: YENİLEME (REFRESH) ESNASINDA ONBOARDING'İ HATIRLAMA 🚨
         window.addEventListener('DOMContentLoaded', async () => { 
             if(currentUserId && localStorage.getItem('ri_token')) {
                 try {
