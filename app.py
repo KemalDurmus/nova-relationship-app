@@ -8,6 +8,7 @@ from database import SessionLocal, engine, Base
 from models import User, RelationshipCV, DateProfile, DateAttribute, NovaCoachingLog, RelationshipJournal
 import uuid
 from datetime import datetime
+from groq import Groq
 
 # Tabloları veritabanına inşa et
 Base.metadata.create_all(bind=engine)
@@ -18,6 +19,12 @@ CORS(app)
 # --- JWT (KİMLİK DOĞRULAMA) AYARLARI ---
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "gizli-anahtari-koymayi-unutma")
 jwt = JWTManager(app)
+
+# Groq İstemcisini Başlat
+try:
+    groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+except:
+    groq_client = None
 
 @app.route('/')
 def home():
@@ -211,6 +218,7 @@ def delete_date(date_id):
     
     return jsonify({"message": "Aday laboratuvardan silindi."})
 
+# 🚨 RADAR GRAFİĞİ VERİLERİNİ HESAPLAYAN YENİ ANALİZ FONKSİYONU 🚨
 @app.route('/api/dates/analysis/<user_id>/<date_id>', methods=['GET'])
 @jwt_required()
 def analyze_date(user_id, date_id):
@@ -234,6 +242,11 @@ def analyze_date(user_id, date_id):
     cons = []
     critical_conflicts = []
     
+    # Grafiğe gönderilecek ham sayısal verileri tutacağımız nesneler
+    chart_labels = ["Mizah", "Finans", "Çocuk", "İletişim", "Alışkanlık"]
+    user_chart_data = [50, 50, 50, 50, 50]  # Varsayılan önem dereceleri (CV Ağırlıkları)
+    date_chart_data = [50, 50, 50, 50, 50]  # Varsayılan adayın performans puanları
+    
     key_names = {
         'humor': 'Mizah Anlayışı',
         'finance': 'Finansal Tutum',
@@ -241,23 +254,47 @@ def analyze_date(user_id, date_id):
         'communication': 'İletişim Sıklığı',
         'habit': 'Zararlı Alışkanlıklar'
     }
+    
+    key_indices = {
+        'humor': 0,
+        'finance': 1,
+        'child': 2,
+        'communication': 3,
+        'habit': 4
+    }
 
     for key, actual_val in attr_dict.items():
         if key in cv_dict:
             cv = cv_dict[key]
             expected_val = cv.expected_value
             readable_key = key_names.get(key, key)
+            idx = key_indices.get(key)
             
+            # Kullanıcının bu kritere verdiği ağırlık değerini (takıntı oranını) grafiğe set ediyoruz
+            user_chart_data[idx] = cv.importance
+            
+            # Adayın bu kriterdeki eşleşme skorunu sayısal puana döküyoruz
+            match_rate = 0.0
             if expected_val == actual_val or expected_val in ["Farketmez", "Önemli Değil", "Sorun Değil"]:
+                match_rate = 1.0
                 pros.append(f"{readable_key} tam istediğin gibi ({actual_val})")
             elif actual_val in ["Dengeli", "Orta", "Sosyal İçici", "Kararsız"] or expected_val in ["Dengeli", "Orta", "Sosyal İçici", "Kararsız"]:
+                match_rate = 0.5
                 cons.append(f"{readable_key} konusunda orta yolu bulmanız gerekebilir (Sen: {expected_val} / O: {actual_val})")
             else:
+                match_rate = 0.0
                 msg = f"{readable_key} dinamikleri tamamen zıt (Sen: {expected_val} / O: {actual_val})"
                 if cv.is_red_flag:
                     critical_conflicts.append(msg)
                 else:
                     cons.append(msg)
+            
+            # Adayın performansı = (Ağırlık * Eşleşme Oranı) şeklinde hesaplanır
+            # Kırmızı çizgi ihlali varsa sıfırlanır
+            if cv.is_red_flag and match_rate == 0.0:
+                date_chart_data[idx] = 0
+            else:
+                date_chart_data[idx] = int(cv.importance * match_rate)
     
     db.close()
     
@@ -269,12 +306,20 @@ def analyze_date(user_id, date_id):
     else:
         nova_msg += "Uyum seviyesi tehlikeli derecede düşük. Beklentilerinle ciddi oranda çelişiyor, çok dikkatli ol."
 
+    # Nova'nın grafiğin eğriliğine göre yapacağı iğneleyici özel yorum
+    out_of_bounds_count = sum(1 for i in range(5) if date_chart_data[i] < (user_chart_data[i] * 0.3))
+    if out_of_bounds_count >= 2:
+        nova_msg += " Ayrıca grafikteki şu yamukluğa bir bak... Eğriler hayatın gibi tamamen kontrolden çıkmış durumda! 📉🙄"
+
     return jsonify({
         "final_score": profile.score,
         "nova_message": nova_msg,
         "pros": pros if pros else ["Belirgin bir güçlü yön saptanamadı."],
         "cons": cons if cons else ["Her şey yolunda görünüyor, belirgin bir pürüz yok."],
-        "critical_conflicts": critical_conflicts
+        "critical_conflicts": critical_conflicts,
+        "chart_labels": chart_labels,
+        "user_chart_data": user_chart_data,
+        "date_chart_data": date_chart_data
     })
 
 
@@ -299,7 +344,7 @@ def handle_journal(user_id):
         db.close()
         return jsonify(result)
 
-# 🚨 DÜZELTİLEN YER 1: NOVA DEDİKODU ASİSTANI (UZUN VE DETAYLI METİNLER) 🚨
+# GERÇEK YAPAY ZEKA (GROQ + LLAMA3) KOÇLUK MERKEZİ
 @app.route('/api/coaching/<user_id>', methods=['GET', 'POST'])
 @jwt_required()
 def handle_coaching(user_id):
@@ -314,22 +359,34 @@ def handle_coaching(user_id):
         db.add(user_msg)
         db.commit()
         
-        time.sleep(0.3) # Cevap geliyormuş hissi için biraz daha bekletiyoruz
+        bot_text = "Nova: Gözlem yeteneklerimi (API) kaybettim, şu an sana laf sokamıyorum. Lütfen sistem yöneticisine API Key'ini kontrol etmesini söyle. 🙄"
         
-        msg_lower = msg.lower()
-        if "analiz" in msg_lower:
-            bot_text = "Nova: Hemen laboratuvar kayıtlarını ve geçmiş verileri tarıyorum... Açık konuşmak gerekirse algoritmalarım bu kişi için tehlike çanları çalıyor. Kağıt üzerinde bir iki olumlu özelliği gözünü boyamasın, benim acımasız kırmızı çizgi tarayıcılarım bu profilde ciddi uyumsuzluklar tespit etti. Geçmişteki hatalarını tekrar etmek istemiyorsan, bu kişiyle arana acilen bir Çin Seddi çekmeli ve mantığını devreye sokmalısın. Onu sadece bir denek olarak gör, duygusal bir yatırım yapma! 🕵️‍♀️📉"
-        elif "yazar mı" in msg_lower or "döner mi" in msg_lower:
-            bot_text = "Nova: İstatistiklere ve benim yanılmaz veritabanıma göre, o mesajın gelme ihtimali maalesef oldukça düşük. Gelse bile, bu aranızdaki sorunların çözüldüğü anlamına gelmez; büyük ihtimalle sadece anlık bir can sıkıntısı veya ufak bir ego tatmini arayışıdır. Gerçekten o toksik döngüye tekrar girip kendi kusursuz uyum puanlarını sabote etmek istiyor musun? Telefonu yavaşça masaya bırak, derin bir nefes al ve kendine senin standartlarını gerçekten hak eden, daha yüksek puanlı kurbanlar bulmaya odaklan. 💅📵"
-        elif "engelle" in msg_lower or "sil" in msg_lower:
-            bot_text = "Nova: İşte tam olarak duymak istediğim o kararlı, soğukkanlı ve muhteşem ses! Hiç durma, saniye bile düşünme ve anında engelle. Bu laboratuvarda zayıflığa, gereksiz nostaljiye ve geri vitese asla yer yok. Sen sistemde %90 üstü uyum arayan birisin, böyle düşük puanlı ve vizyonsuz deneklerle vakit kaybetmek senin eşsiz veri havuzunu kirletmekten başka hiçbir işe yaramaz. Arşivden siliyoruz, temiz bir sayfa açıyoruz. Sıradaki denek gelsin! 🛑🗑️✨"
-        else:
-            bot_text = "Nova: Seni çok iyi anlıyorum tatlım, ama olaya biraz daha mantıksal, analitik ve tamamen soğukkanlı yaklaşman gerekiyor. Duygularının senin o güzel zihnini yönetmesine izin verirsen, o titizlikle hazırladığımız uyum puanları ve kırmızı çizgiler hiçbir işe yaramaz. Lütfen bana detaylardan, hareketlerinden ve o kişinin somut eylemlerinden bahset ki sana çok daha acımasız, nokta atışı ve doğru bir teşhis koyabileyim. Sınırlarını koru ve asla gardını indirme! 🧠✨"
+        if groq_client:
+            try:
+                completion = groq_client.chat.completions.create(
+                    model="llama3-70b-8192", 
+                    messages=[
+                        {
+                            "role": "system", 
+                            "content": "Senin adın Nova. Sen acımasız, iğneleyici, aşka inanmayan, istatistiklere tapan ve laf sokan bir ilişki koçusun. Karşındaki kişi sana dert yanıyor veya tavsiye soruyor. Ona asla acıma, doğruları yüzüne tokat gibi çarp. Toksik ilişkilerden ve düşük standartlardan nefret ediyorsun. Cevapların çok uzun olmasın (maksimum 2-3 kısa paragraf). Bol bol 💅, 🚩, 🗑️, 🧠, 🙄 gibi emojiler kullan. Asla kibar bir yapay zeka asistanı gibi davranma."
+                        },
+                        {
+                            "role": "user", 
+                            "content": msg
+                        }
+                    ],
+                    temperature=0.8,
+                    max_tokens=500,
+                )
+                bot_text = "Nova: " + completion.choices[0].message.content
+            except Exception as e:
+                bot_text = f"Nova: Beyin devrelerimde bir hata oluştu ve şu an sana analiz yapamıyorum. Hata Kodu: {str(e)} 🛠️"
         
         nova_msg = NovaCoachingLog(user_id=user_id, message=bot_text, sender='nova')
         db.add(nova_msg)
         db.commit()
         db.close()
+        
         return jsonify({"message": "Mesaj gönderildi"})
     else:
         logs = db.query(NovaCoachingLog).filter_by(user_id=user_id).order_by(NovaCoachingLog.timestamp.asc()).all()
@@ -337,7 +394,6 @@ def handle_coaching(user_id):
         db.close()
         return jsonify(result)
 
-# 🚨 DÜZELTİLEN YER 2: TRENDLER BÖLÜMÜ (UZUN VE DETAYLI METİNLER) 🚨
 @app.route('/api/trends/<user_id>', methods=['GET'])
 @jwt_required()
 def get_trends(user_id):

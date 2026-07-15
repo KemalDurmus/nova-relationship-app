@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nova - Relationship Intelligence</title>
+    <!-- 🚨 YENİ: CHART.JS RADAR GRAFİĞİ KÜTÜPHANESİ 🚨 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-main: #06080f; --bg-panel: rgba(20, 23, 36, 0.65); --bg-input: rgba(10, 12, 20, 0.8); 
@@ -119,6 +121,16 @@
         .report-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
         .report-score-box { text-align: center; padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 20px; background: rgba(0,0,0,0.3);}
         .report-score-val { font-size: 48px; font-weight: 900; color: var(--success); }
+        
+        /* 🚨 RADAR GRAFİĞİ İÇİN ALAN TANIMI 🚨 */
+        .chart-section {
+            background: var(--bg-panel); border: 1px solid var(--border-color);
+            padding: 20px; border-radius: 20px; margin-bottom: 20px;
+            display: flex; justify-content: center; align-items: center;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            width: 100%; max-width: 700px; margin-left: auto; margin-right: auto;
+        }
+
         .report-section { background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; margin-bottom: 15px; text-align: left; }
         .report-section h4 { font-size: 12px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
         .report-list-item { font-size: 13px; margin-bottom: 8px; padding-left: 12px; position: relative; }
@@ -277,7 +289,6 @@
                 
                 <form id="loginForm">
                     <div class="form-group"><label>Gizli Ajan E-postası</label><input type="email" id="logEmail" placeholder="senin@mailin.com" required></div>
-                    <!-- ŞİFREMİ UNUTTUM EKLENDİ -->
                     <div class="form-group">
                         <label style="display: flex; justify-content: space-between; align-items: center;">
                             Şifre 
@@ -361,7 +372,7 @@
             <div id="addDateBox" class="panel glass-panel hidden" style="text-align:left; margin-bottom:20px; border-color:var(--accent-gold);">
                 <h3 style="font-size:15px; margin-bottom:15px; color:white;">Rapor Fişi</h3>
                 <form id="addDateForm">
-                    <div class="form-group"><label>Aday İsmi / Suçlu Kodu</label><input type="text" id="d_name" placeholder="Örn: O yalancı çocuk" required></div>
+                    <div class="form-group"><label>Aday İsmi / Suçlu Kodu</label><input type="text" id="d_name" placeholder="Örn: O yalancı child" required></div>
                     <div class="form-group"><label>Yaşı & Mesleği</label><input type="text" id="d_job" placeholder="Örn: 24, Yarı Zamanlı CEO"></div>
                     <div style="border-bottom:1px solid var(--border-color); margin:15px 0;"></div>
                     <div class="form-group"><label>Mizahı Nasıldı?</label><select id="attr_humor"><option value="Yüksek">Zeka Küpü</option><option value="Orta">Gülümsetse Yeter</option><option value="Düşük">Duvar</option></select></div>
@@ -397,6 +408,12 @@
             <button class="nav-btn" onclick="closeReportLayer()">✕ Gizle</button>
         </div>
         <div class="report-score-box glass-panel"><h4>Nesnel Uyum Endeksi</h4><div class="report-score-val" id="repScore">%0</div></div>
+        
+        <!-- 🚨 YENİ: RADAR GRAFİĞİ CANVAS ALANI 🚨 -->
+        <div class="chart-section">
+            <canvas id="novaRadarChart" style="max-height: 280px;"></canvas>
+        </div>
+
         <div class="report-section glass-panel"><h4>Nova'nın İğneleyici Teşhisi</h4><p id="repNovaMessage" style="font-size:13px; color:white; line-height: 1.5;"></p></div>
         <div id="repCriticalSection" class="report-section hidden" style="border-color:var(--alert); background:rgba(255,71,87,0.1);"><h4 style="color:var(--alert);">🚨 Uzak Durman Gerekenler (Kırmızı Çizgiler)</h4><div id="repCriticalList"></div></div>
         <div class="report-section glass-panel"><h4 style="color:var(--success);">✅ Şaşırttı (Green Flags)</h4><div id="repProsList"></div></div>
@@ -407,6 +424,7 @@
 
     <script>
         let currentUserId = localStorage.getItem('ri_user_id');
+        let myRadarChart = null; // Grafik objesini globalde tutuyoruz
 
         function showCustomModal(title, text, icon, isConfirm = false) {
             return new Promise((resolve) => {
@@ -454,7 +472,6 @@
             customAlert("Bu konu senin için normalde az önemli görünse bile, eğer kurbanımız seninle <strong>TAMAMEN ZIT</strong> bir cevap verirse, o acımasız <strong>-25 kırmızı çizgi tokatını</strong> yer. Acıma!", "KIRMIZI ÇİZGİ CEZASI", "🚨");
         }
 
-        // ŞİFREMİ UNUTTUM UYARISI EKLENDİ
         function forgotPasswordAlert(e) {
             e.preventDefault();
             customAlert("Şifreni unutacak kadar aklın o toksik tiplerde mi kaldı?\n\nŞu an laboratuvarda otomatik şifre sıfırlama kuryelerimiz (e-posta sunucusu) aktif değil. Biraz hafızanı zorla veya tamamen temiz bir sayfa açıp yeni bir hesapla kayıt ol! 🧠💅", "Hafıza Kaybı Mı?", "🕵️‍♀️");
@@ -595,6 +612,71 @@
             if(res.ok) { loadDates(); } else { customAlert("Bir şeyler ters gitti, sanırım sana yapıştı bırakmıyor.", "Hata", "🙄"); }
         }
 
+        // 🚨 YENİ: NEON RADAR GRAFİĞİNİ BAŞLATAN JS MOTORU 🚨
+        function renderRadarChart(labels, userData, dateData) {
+            const ctx = document.getElementById('novaRadarChart').getContext('2d');
+            
+            // Eğer daha önceden çizilmiş bir grafik varsa hafızadan temizliyoruz (Çakışmaları önlemek için)
+            if (myRadarChart) {
+                myRadarChart.destroy();
+            }
+
+            myRadarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Senin İdeal Çizgin',
+                            data: userData,
+                            backgroundColor: 'rgba(255, 211, 42, 0.1)',
+                            borderColor: '#ffd32a', // Altın Sarısı Neon
+                            borderWidth: 2,
+                            pointBackgroundColor: '#ffd32a',
+                            pointHoverBorderColor: '#ffd32a'
+                        },
+                        {
+                            label: 'Onun Gerçek Değeri',
+                            data: dateData,
+                            backgroundColor: 'rgba(255, 71, 87, 0.15)',
+                            borderColor: '#ff4757', // Tehlike Kırmızısı Neon
+                            borderWidth: 2,
+                            pointBackgroundColor: '#ff4757',
+                            pointHoverBorderColor: '#ff4757'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#f3f4f6', // Açık renk metin
+                                font: { size: 11, weight: 'bold' }
+                            }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                            pointLabels: {
+                                color: '#8b949e',
+                                font: { size: 12, weight: 'bold' }
+                            },
+                            ticks: {
+                                display: false, // Sayısal etiketleri gizliyoruz (tasarımı bozmaması için)
+                                stepSize: 20
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+
         async function viewAnalysis(dateId, name) {
             let res = await fetch(`/api/dates/analysis/${currentUserId}/${dateId}`, { headers: getAuthHeaders() });
             if(res.ok) {
@@ -606,7 +688,14 @@
                 let consList = document.getElementById('repConsList'); consList.innerHTML = ''; data.cons.forEach(c => { consList.innerHTML += `<div class="report-list-item">${c}</div>`; });
                 let critSection = document.getElementById('repCriticalSection'); let critList = document.getElementById('repCriticalList'); critList.innerHTML = '';
                 if(data.critical_conflicts && data.critical_conflicts.length > 0) { critSection.classList.remove('hidden'); data.critical_conflicts.forEach(cc => { critList.innerHTML += `<div class="report-list-item flag-red">${cc}</div>`; }); } else { critSection.classList.add('hidden'); }
+                
+                // Analiz katmanını açıyoruz
                 document.getElementById('analysisReportLayer').classList.add('active');
+
+                // 🚨 YENİ: Arka plandan gelen listelerle Radar Grafiğini tetikliyoruz 🚨
+                setTimeout(() => {
+                    renderRadarChart(data.chart_labels, data.user_chart_data, data.date_chart_data);
+                }, 100);
             }
         }
 
