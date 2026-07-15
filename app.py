@@ -1,5 +1,5 @@
 import os
-import time # YENİ EKLENDİ (Sıralama hatasını çözmek için)
+import time
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -100,7 +100,7 @@ def handle_cv(user_id):
 # --- NOVA MATEMATİKSEL PUANLAMA MOTORU ---
 def calculate_match_score(user_cv_records, date_attributes):
     if not user_cv_records or not date_attributes: 
-        return 50 # Veri yoksa ortalama puan
+        return 50
 
     total_weight = 0
     earned_score = 0
@@ -115,18 +115,16 @@ def calculate_match_score(user_cv_records, date_attributes):
             weight = cv.importance
             total_weight += weight
 
-            # Uyum Yüzdesini Belirleme
             match_rate = 0.0
             if expected_val == actual_val or expected_val in ["Farketmez", "Önemli Değil", "Sorun Değil"]:
-                match_rate = 1.0 # Birebir uyum
+                match_rate = 1.0 
             elif actual_val in ["Dengeli", "Orta", "Sosyal İçici", "Kararsız"] or expected_val in ["Dengeli", "Orta", "Sosyal İçici", "Kararsız"]:
-                match_rate = 0.5 # Kısmi (orta yollu) uyum
+                match_rate = 0.5 
             else:
-                match_rate = 0.0 # Tam zıtlık
+                match_rate = 0.0 
 
             earned_score += (weight * match_rate)
 
-            # Kırmızı çizgi kuralı: Kısmi uyum bile yoksa cezayı kes
             if cv.is_red_flag and match_rate == 0.0:
                 red_flag_penalty = True
 
@@ -135,11 +133,9 @@ def calculate_match_score(user_cv_records, date_attributes):
 
     final_score = int((earned_score / total_weight) * 100)
 
-    # Kırmızı çizgi cezası (-25 puan)
     if red_flag_penalty:
         final_score -= 25
 
-    # Puanı 0 ile 100 arasına hapsediyoruz
     return max(0, min(100, final_score))
 
 
@@ -303,7 +299,7 @@ def handle_journal(user_id):
         db.close()
         return jsonify(result)
 
-# 🚨 DÜZELTİLEN YER: NOVA DEDİKODU ASİSTANI EKRANI 🚨
+# 🚨 DÜZELTİLEN YER 1: NOVA DEDİKODU ASİSTANI (UZUN VE DETAYLI METİNLER) 🚨
 @app.route('/api/coaching/<user_id>', methods=['GET', 'POST'])
 @jwt_required()
 def handle_coaching(user_id):
@@ -314,38 +310,34 @@ def handle_coaching(user_id):
     if request.method == 'POST':
         msg = request.json.get('message')
         
-        # 1. Senin mesajını kaydet
         user_msg = NovaCoachingLog(user_id=user_id, message=msg, sender='user')
         db.add(user_msg)
         db.commit()
         
-        # 2. SIRALAMA HATASI ÇÖZÜMÜ: Nova mesajı yazmadan önce milisaniyelik gecikme yaratıyoruz.
-        time.sleep(0.1) 
+        time.sleep(0.3) # Cevap geliyormuş hissi için biraz daha bekletiyoruz
         
-        # 3. MİNİ YAPAY ZEKA (Kelime Avcısı)
         msg_lower = msg.lower()
         if "analiz" in msg_lower:
-            bot_text = "Nova: Hemen laboratuvar kayıtlarını tarıyorum... Bu kişi kağıt üzerinde potansiyel gösterse de, kırmızı çizgilerinle riskli bir temas içinde olabilir. Temkinli yaklaş. 🕵️‍♀️"
+            bot_text = "Nova: Hemen laboratuvar kayıtlarını ve geçmiş verileri tarıyorum... Açık konuşmak gerekirse algoritmalarım bu kişi için tehlike çanları çalıyor. Kağıt üzerinde bir iki olumlu özelliği gözünü boyamasın, benim acımasız kırmızı çizgi tarayıcılarım bu profilde ciddi uyumsuzluklar tespit etti. Geçmişteki hatalarını tekrar etmek istemiyorsan, bu kişiyle arana acilen bir Çin Seddi çekmeli ve mantığını devreye sokmalısın. Onu sadece bir denek olarak gör, duygusal bir yatırım yapma! 🕵️‍♀️📉"
         elif "yazar mı" in msg_lower or "döner mi" in msg_lower:
-            bot_text = "Nova: İstatistiklere ve senin anlattıklarına göre o mesajın gelme ihtimali düşük. Gelse bile, gerçekten o toksik döngüye tekrar girmek istiyor musun? 💅"
+            bot_text = "Nova: İstatistiklere ve benim yanılmaz veritabanıma göre, o mesajın gelme ihtimali maalesef oldukça düşük. Gelse bile, bu aranızdaki sorunların çözüldüğü anlamına gelmez; büyük ihtimalle sadece anlık bir can sıkıntısı veya ufak bir ego tatmini arayışıdır. Gerçekten o toksik döngüye tekrar girip kendi kusursuz uyum puanlarını sabote etmek istiyor musun? Telefonu yavaşça masaya bırak, derin bir nefes al ve kendine senin standartlarını gerçekten hak eden, daha yüksek puanlı kurbanlar bulmaya odaklan. 💅📵"
         elif "engelle" in msg_lower or "sil" in msg_lower:
-            bot_text = "Nova: Hiç durma, hemen engelle. Bu laboratuvarda zayıflığa ve geri vitese yer yok! Temiz bir sayfa açıyoruz. 🛑"
+            bot_text = "Nova: İşte tam olarak duymak istediğim o kararlı, soğukkanlı ve muhteşem ses! Hiç durma, saniye bile düşünme ve anında engelle. Bu laboratuvarda zayıflığa, gereksiz nostaljiye ve geri vitese asla yer yok. Sen sistemde %90 üstü uyum arayan birisin, böyle düşük puanlı ve vizyonsuz deneklerle vakit kaybetmek senin eşsiz veri havuzunu kirletmekten başka hiçbir işe yaramaz. Arşivden siliyoruz, temiz bir sayfa açıyoruz. Sıradaki denek gelsin! 🛑🗑️✨"
         else:
-            bot_text = "Nova: Seni anlıyorum. Ama olaya biraz daha mantıksal yaklaş. Duygularının seni yönetmesine izin verirsen, o uyum puanları hiçbir işe yaramaz. Sınırlarını koru! 🧠"
+            bot_text = "Nova: Seni çok iyi anlıyorum tatlım, ama olaya biraz daha mantıksal, analitik ve tamamen soğukkanlı yaklaşman gerekiyor. Duygularının senin o güzel zihnini yönetmesine izin verirsen, o titizlikle hazırladığımız uyum puanları ve kırmızı çizgiler hiçbir işe yaramaz. Lütfen bana detaylardan, hareketlerinden ve o kişinin somut eylemlerinden bahset ki sana çok daha acımasız, nokta atışı ve doğru bir teşhis koyabileyim. Sınırlarını koru ve asla gardını indirme! 🧠✨"
         
-        # 4. Nova'nın zekice cevabını kaydet
         nova_msg = NovaCoachingLog(user_id=user_id, message=bot_text, sender='nova')
         db.add(nova_msg)
         db.commit()
         db.close()
         return jsonify({"message": "Mesaj gönderildi"})
     else:
-        # Veritabanından zaman damgasına göre doğru sırayla çekiyoruz
         logs = db.query(NovaCoachingLog).filter_by(user_id=user_id).order_by(NovaCoachingLog.timestamp.asc()).all()
         result = [{"sender": l.sender, "content": l.message} for l in logs]
         db.close()
         return jsonify(result)
 
+# 🚨 DÜZELTİLEN YER 2: TRENDLER BÖLÜMÜ (UZUN VE DETAYLI METİNLER) 🚨
 @app.route('/api/trends/<user_id>', methods=['GET'])
 @jwt_required()
 def get_trends(user_id):
@@ -357,16 +349,16 @@ def get_trends(user_id):
     total = len(profiles)
     
     if total == 0:
-        insight = "Laboratuvarda henüz in cin top oynuyor. Birilerini ekle de analiz yapıp biraz dedikodu yapalım! 🕸️🧐"
+        insight = "Laboratuvarda henüz in cin top oynuyor... Hiçbir denek verisi bulamadığım için sana laf bile sokamıyorum! Sistemdeki algoritmalarım paslanmadan önce hemen sağ üstten birilerini ekle de, şöyle detaylı bir analiz yapıp hep beraber o kişileri biraz kınayalım! 🕸️🧐"
     else:
         avg_score = sum(p.score for p in profiles) / total
         
         if avg_score >= 75:
-            insight = f"Havuzdaki {total} adayın ortalaması %{int(avg_score)}. Helal olsun, standartların yüksek ve kaliteli insanları çekiyorsun! 🥂😎"
+            insight = f"İnanılmaz bir istatistik! Havuzundaki toplam {total} adayın genel not ortalaması tam olarak %{int(avg_score)}. Açıkçası zor beğenen algoritmalarım bile bu muazzam sonuca şaşırdı. Helal olsun sana! Standartların gerçekten çok yüksek ve hayatına sadece senin kalitende, beklentilerini karşılayabilecek insanları alıyorsun. Kırmızı çizgilerini harika bir şekilde koruyorsun. Bu gidişle o kusursuz %100 eşleşmeyi yakalaman sadece an meselesi. Aynen böyle dik durmaya devam et, laboratuvar senin bu üstün performansınla gurur duyuyor! 🥂😎✨"
         elif avg_score >= 50:
-            insight = f"Havuzdaki {total} adayın ortalaması %{int(avg_score)}. Ortalama sularda yüzüyoruz. 'İşte bu!' dedirtecek o kişiyi henüz bulamadık ama fena gitmiyoruz. 🤷‍♂️"
+            insight = f"Sistemdeki verileri taradığımda havuzundaki {total} adayın ortalamasının %{int(avg_score)} olduğunu görüyorum. Ne desem bilemedim... Tamamen ortalama, sıradan ve 'güvenli ama fena halde sıkıcı' sularda yüzüyoruz. Ne tam bir felaket diyebileceğimiz bir facia var ortada, ne de heyecandan ekranımı parlatacak o 'İşte bu!' dedirten efsanevi profil. Standartlarını biraz daha mı netleştirsen acaba? Yoksa böyle sadece 'idare eder' puanlı profillerle veri havuzunu doldurmaya ve zaman kaybetmeye devam mı edeceksin? Daha acımasız ve seçici olma vakti çoktan geldi de geçiyor! 🤷‍♂️📊"
         else:
-            insight = f"Havuzdaki {total} adayın ortalaması %{int(avg_score)}. Usta sen nerede kırmızı çizgilerini ihlal eden (Red Flag) insan varsa mıknatıs gibi çekmişsin! Acil taktik değiştirmemiz lazım, yoksa sinir hastası olacaksın! 🚩😅"
+            insight = f"Sistem alarm veriyor! Havuzundaki {total} adayın ortalaması maalesef felaket bir seviyede: %{int(avg_score)}. Gerçekten inanılmaz... Usta sen dışarıda nerede senin kırmızı çizgilerini ihlal eden, toksik, sorunlu ve sana tamamen zıt (Red Flag) insan varsa hepsini bir mıknatıs gibi hayatına çekmişsin! Şımarık egoistlerden tut, iletişim fukaralarına kadar hepsi burada. Veritabanım bu düşük eşleşmeleri analiz ederken adeta acı çekiyor. Acil olarak hayatındaki bu taktiği değiştirmemiz ve senin o içindeki 'belki onu düzeltirim' kompleksinden kurtulman lazım. Yoksa bu gidişle laboratuvardan sağ çıkamayacağız. Acilen kendine gel ve çöp sepetini kullanmaya başla! 🚩😅📉"
 
     db.close()
     
