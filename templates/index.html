@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nova - Relationship Intelligence</title>
-    <!-- 🚨 YENİ: CHART.JS RADAR GRAFİĞİ KÜTÜPHANESİ 🚨 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -122,7 +121,6 @@
         .report-score-box { text-align: center; padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 20px; background: rgba(0,0,0,0.3);}
         .report-score-val { font-size: 48px; font-weight: 900; color: var(--success); }
         
-        /* 🚨 RADAR GRAFİĞİ İÇİN ALAN TANIMI 🚨 */
         .chart-section {
             background: var(--bg-panel); border: 1px solid var(--border-color);
             padding: 20px; border-radius: 20px; margin-bottom: 20px;
@@ -174,6 +172,14 @@
         .custom-alert-title { color: var(--accent-gold); font-size: 18px; font-weight: 900; margin-bottom: 15px; letter-spacing: 1px; }
         .custom-alert-text { color: var(--text-main); font-size: 14px; line-height: 1.6; margin-bottom: 25px; }
         .modal-buttons { display: flex; gap: 10px; justify-content: center; }
+
+        /* 🚨 YENİ: BAŞLANGIÇ YÜKLEME EKRANI TASARIMI 🚨 */
+        #startupLoader {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: var(--bg-main); z-index: 99999999; 
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -198,6 +204,12 @@
     </style>
 </head>
 <body>
+
+    <!-- 🚨 YENİ: BAŞLANGIÇ YÜKLEME EKRANI 🚨 -->
+    <div id="startupLoader">
+        <h1 style="font-size: 40px; font-weight: 900; color: var(--accent-gold); letter-spacing: 4px; text-shadow: 0 0 20px rgba(255,211,42,0.6); animation: glowPulse 1.5s infinite alternate;">NOVA</h1>
+        <p style="color:var(--text-muted); font-size:12px; letter-spacing:2px; margin-top:10px;">SİSTEM BAŞLATILIYOR...</p>
+    </div>
 
     <div id="globalCustomModal" class="custom-alert-layer">
         <div class="custom-alert-box glass-panel">
@@ -282,7 +294,8 @@
             <button id="logoutBtn" class="nav-btn" style="color:var(--alert); border-color:var(--alert);" onclick="logout()">Sistemden Çık</button>
         </div>
 
-        <div id="authPanel" class="main-content">
+        <!-- 🚨 DÜZELTME: class="main-content hidden" yapılarak arkaplanda açılması engellendi 🚨 -->
+        <div id="authPanel" class="main-content hidden">
             <div class="panel glass-panel" style="margin-top: 50px;">
                 <h1 style="font-size: 36px; font-weight: 900; color: var(--accent-gold); margin-bottom: 5px; text-shadow: 0 0 20px rgba(255,211,42,0.6); animation: glowPulse 2s infinite alternate;">NOVA</h1>
                 <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 30px; letter-spacing: 1px;">AŞK HAYATININ SOĞUKKANLI YARGIÇI</p>
@@ -372,7 +385,7 @@
             <div id="addDateBox" class="panel glass-panel hidden" style="text-align:left; margin-bottom:20px; border-color:var(--accent-gold);">
                 <h3 style="font-size:15px; margin-bottom:15px; color:white;">Rapor Fişi</h3>
                 <form id="addDateForm">
-                    <div class="form-group"><label>Aday İsmi / Suçlu Kodu</label><input type="text" id="d_name" placeholder="Örn: O yalancı child" required></div>
+                    <div class="form-group"><label>Aday İsmi / Suçlu Kodu</label><input type="text" id="d_name" placeholder="Örn: O yalancı çocuk" required></div>
                     <div class="form-group"><label>Yaşı & Mesleği</label><input type="text" id="d_job" placeholder="Örn: 24, Yarı Zamanlı CEO"></div>
                     <div style="border-bottom:1px solid var(--border-color); margin:15px 0;"></div>
                     <div class="form-group"><label>Mizahı Nasıldı?</label><select id="attr_humor"><option value="Yüksek">Zeka Küpü</option><option value="Orta">Gülümsetse Yeter</option><option value="Düşük">Duvar</option></select></div>
@@ -409,7 +422,6 @@
         </div>
         <div class="report-score-box glass-panel"><h4>Nesnel Uyum Endeksi</h4><div class="report-score-val" id="repScore">%0</div></div>
         
-        <!-- 🚨 YENİ: RADAR GRAFİĞİ CANVAS ALANI 🚨 -->
         <div class="chart-section">
             <canvas id="novaRadarChart" style="max-height: 280px;"></canvas>
         </div>
@@ -424,7 +436,7 @@
 
     <script>
         let currentUserId = localStorage.getItem('ri_user_id');
-        let myRadarChart = null; // Grafik objesini globalde tutuyoruz
+        let myRadarChart = null; 
 
         function showCustomModal(title, text, icon, isConfirm = false) {
             return new Promise((resolve) => {
@@ -612,11 +624,9 @@
             if(res.ok) { loadDates(); } else { customAlert("Bir şeyler ters gitti, sanırım sana yapıştı bırakmıyor.", "Hata", "🙄"); }
         }
 
-        // 🚨 YENİ: NEON RADAR GRAFİĞİNİ BAŞLATAN JS MOTORU 🚨
         function renderRadarChart(labels, userData, dateData) {
             const ctx = document.getElementById('novaRadarChart').getContext('2d');
             
-            // Eğer daha önceden çizilmiş bir grafik varsa hafızadan temizliyoruz (Çakışmaları önlemek için)
             if (myRadarChart) {
                 myRadarChart.destroy();
             }
@@ -630,7 +640,7 @@
                             label: 'Senin İdeal Çizgin',
                             data: userData,
                             backgroundColor: 'rgba(255, 211, 42, 0.1)',
-                            borderColor: '#ffd32a', // Altın Sarısı Neon
+                            borderColor: '#ffd32a', 
                             borderWidth: 2,
                             pointBackgroundColor: '#ffd32a',
                             pointHoverBorderColor: '#ffd32a'
@@ -639,7 +649,7 @@
                             label: 'Onun Gerçek Değeri',
                             data: dateData,
                             backgroundColor: 'rgba(255, 71, 87, 0.15)',
-                            borderColor: '#ff4757', // Tehlike Kırmızısı Neon
+                            borderColor: '#ff4757', 
                             borderWidth: 2,
                             pointBackgroundColor: '#ff4757',
                             pointHoverBorderColor: '#ff4757'
@@ -652,7 +662,7 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f3f4f6', // Açık renk metin
+                                color: '#f3f4f6', 
                                 font: { size: 11, weight: 'bold' }
                             }
                         }
@@ -666,7 +676,7 @@
                                 font: { size: 12, weight: 'bold' }
                             },
                             ticks: {
-                                display: false, // Sayısal etiketleri gizliyoruz (tasarımı bozmaması için)
+                                display: false, 
                                 stepSize: 20
                             },
                             suggestedMin: 0,
@@ -689,10 +699,8 @@
                 let critSection = document.getElementById('repCriticalSection'); let critList = document.getElementById('repCriticalList'); critList.innerHTML = '';
                 if(data.critical_conflicts && data.critical_conflicts.length > 0) { critSection.classList.remove('hidden'); data.critical_conflicts.forEach(cc => { critList.innerHTML += `<div class="report-list-item flag-red">${cc}</div>`; }); } else { critSection.classList.add('hidden'); }
                 
-                // Analiz katmanını açıyoruz
                 document.getElementById('analysisReportLayer').classList.add('active');
 
-                // 🚨 YENİ: Arka plandan gelen listelerle Radar Grafiğini tetikliyoruz 🚨
                 setTimeout(() => {
                     renderRadarChart(data.chart_labels, data.user_chart_data, data.date_chart_data);
                 }, 100);
@@ -722,6 +730,7 @@
         async function saveJournal() { let t = document.getElementById('journalInput').value.trim(); if(!t) return; let res = await fetch(`/api/journal/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({entry_text: t}) }); if(res.ok) { document.getElementById('journalInput').value = ''; loadJournal(); } }
         async function runCoupleAnalysis() { if(!currentUserId) return; document.getElementById('coupleReportResult').classList.remove('hidden'); let p = { finance: document.getElementById('cp_finance').value, child: document.getElementById('cp_child').value, communication: document.getElementById('cp_communication').value }; let res = await fetch(`/api/couple_match/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({partner_cv: p}) }); if(res.ok) { let d = await res.json(); document.getElementById('coupleReportText').innerText = d.nova_report; } }
 
+        // 🚨 GÜNCELLENMİŞ DOMContentLoaded (FOUC ÇÖZÜMÜ) 🚨
         window.addEventListener('DOMContentLoaded', async () => { 
             if(currentUserId && localStorage.getItem('ri_token')) {
                 try {
@@ -733,13 +742,24 @@
                         } else {
                             initApp();
                         }
-                    } else { logout(); }
-                } catch(e) { initApp(); }
+                    } else { 
+                        logout(); 
+                    }
+                } catch(e) { 
+                    initApp(); 
+                }
             } else { 
                 currentUserId = null; 
                 document.getElementById('authPanel').classList.remove('hidden'); 
                 document.getElementById('topNav').classList.add('hidden'); 
             } 
+            
+            // 🚨 Yükleme Ekranını Yavaşça Kaldır (Nova Görsel Efekti) 🚨
+            setTimeout(() => {
+                let loader = document.getElementById('startupLoader');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.classList.add('hidden'), 500);
+            }, 300);
         });
     </script>
 </body>
