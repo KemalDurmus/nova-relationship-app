@@ -31,7 +31,6 @@
 
         .top-nav { display: flex; align-items: center; border-bottom: 1px solid var(--border-color); width: 100%; padding: 15px 20px;}
         
-        /* NOVA LOGO ANİMASYONU */
         .nav-logo { 
             font-size: 22px; font-weight: 900; color: var(--accent-gold); letter-spacing: 2px; 
             text-shadow: 0 0 10px rgba(255,211,42,0.5);
@@ -97,7 +96,6 @@
         }
         .btn-master:active { transform: scale(0.98); }
         
-        /* PREMIUM BUTON ANİMASYONU */
         .btn-premium { 
             background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; 
             box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3); border: 1px solid #c39bd3;
@@ -279,7 +277,14 @@
                 
                 <form id="loginForm">
                     <div class="form-group"><label>Gizli Ajan E-postası</label><input type="email" id="logEmail" placeholder="senin@mailin.com" required></div>
-                    <div class="form-group"><label>Şifre</label><input type="password" id="logPassword" placeholder="Eski sevgilinin adını koymadın umarım..." required></div>
+                    <!-- ŞİFREMİ UNUTTUM EKLENDİ -->
+                    <div class="form-group">
+                        <label style="display: flex; justify-content: space-between; align-items: center;">
+                            Şifre 
+                            <a href="#" onclick="forgotPasswordAlert(event)" style="font-size: 11px; color: var(--accent-gold); text-decoration: none; font-weight: normal; letter-spacing: 0.5px;">Şifremi Unuttum</a>
+                        </label>
+                        <input type="password" id="logPassword" placeholder="Eski sevgilinin adını koymadın umarım..." required>
+                    </div>
                     <button type="submit" class="btn-master">Laboratuvara Gir</button>
                     <div style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">
                         Laboratuvara yabancı mısın? <a href="#" onclick="toggleForms()" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">Hemen Kayıt Ol</a>
@@ -447,6 +452,12 @@
         function showInfoAlert(e) {
             e.preventDefault(); 
             customAlert("Bu konu senin için normalde az önemli görünse bile, eğer kurbanımız seninle <strong>TAMAMEN ZIT</strong> bir cevap verirse, o acımasız <strong>-25 kırmızı çizgi tokatını</strong> yer. Acıma!", "KIRMIZI ÇİZGİ CEZASI", "🚨");
+        }
+
+        // ŞİFREMİ UNUTTUM UYARISI EKLENDİ
+        function forgotPasswordAlert(e) {
+            e.preventDefault();
+            customAlert("Şifreni unutacak kadar aklın o toksik tiplerde mi kaldı?\n\nŞu an laboratuvarda otomatik şifre sıfırlama kuryelerimiz (e-posta sunucusu) aktif değil. Biraz hafızanı zorla veya tamamen temiz bir sayfa açıp yeni bir hesapla kayıt ol! 🧠💅", "Hafıza Kaybı Mı?", "🕵️‍♀️");
         }
 
         function getAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('ri_token') }; }
