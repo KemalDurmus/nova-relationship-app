@@ -173,7 +173,6 @@
         .custom-alert-text { color: var(--text-main); font-size: 14px; line-height: 1.6; margin-bottom: 25px; }
         .modal-buttons { display: flex; gap: 10px; justify-content: center; }
 
-        /* 🚨 YENİ: BAŞLANGIÇ YÜKLEME EKRANI TASARIMI 🚨 */
         #startupLoader {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: var(--bg-main); z-index: 99999999; 
@@ -205,7 +204,6 @@
 </head>
 <body>
 
-    <!-- 🚨 YENİ: BAŞLANGIÇ YÜKLEME EKRANI 🚨 -->
     <div id="startupLoader">
         <h1 style="font-size: 40px; font-weight: 900; color: var(--accent-gold); letter-spacing: 4px; text-shadow: 0 0 20px rgba(255,211,42,0.6); animation: glowPulse 1.5s infinite alternate;">NOVA</h1>
         <p style="color:var(--text-muted); font-size:12px; letter-spacing:2px; margin-top:10px;">SİSTEM BAŞLATILIYOR...</p>
@@ -294,7 +292,6 @@
             <button id="logoutBtn" class="nav-btn" style="color:var(--alert); border-color:var(--alert);" onclick="logout()">Sistemden Çık</button>
         </div>
 
-        <!-- 🚨 DÜZELTME: class="main-content hidden" yapılarak arkaplanda açılması engellendi 🚨 -->
         <div id="authPanel" class="main-content hidden">
             <div class="panel glass-panel" style="margin-top: 50px;">
                 <h1 style="font-size: 36px; font-weight: 900; color: var(--accent-gold); margin-bottom: 5px; text-shadow: 0 0 20px rgba(255,211,42,0.6); animation: glowPulse 2s infinite alternate;">NOVA</h1>
@@ -438,6 +435,15 @@
         let currentUserId = localStorage.getItem('ri_user_id');
         let myRadarChart = null; 
 
+        // 🚨 Yükleme Ekranı Kapatma Fonksiyonu 🚨
+        function hideLoader() {
+            let loader = document.getElementById('startupLoader');
+            if (loader && !loader.classList.contains('hidden')) {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.classList.add('hidden'), 500);
+            }
+        }
+
         function showCustomModal(title, text, icon, isConfirm = false) {
             return new Promise((resolve) => {
                 document.getElementById('modalTitle').innerText = title;
@@ -490,7 +496,16 @@
         }
 
         function getAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('ri_token') }; }
-        function logout() { localStorage.removeItem('ri_user_id'); localStorage.removeItem('ri_token'); location.reload(); }
+        
+        // 🚨 GÜNCELLENDİ: Sayfayı yenilemeden temiz çıkış yapan fonksiyon 🚨
+        function logout() { 
+            localStorage.removeItem('ri_user_id'); 
+            localStorage.removeItem('ri_token'); 
+            currentUserId = null;
+            document.getElementById('topNav').classList.add('hidden');
+            ['cv', 'dashboard', 'trends', 'coach', 'journal', 'couple'].forEach(t => document.getElementById(`${t}Panel`).classList.add('hidden'));
+            document.getElementById('authPanel').classList.remove('hidden');
+        }
 
         ['humor', 'finance', 'child', 'communication', 'habit'].forEach(key => {
             let s = document.getElementById(`w_${key}`); if(s) s.addEventListener('input', e => document.getElementById(`lbl_w_${key}`).innerText = `%${e.target.value}`);
@@ -523,6 +538,7 @@
         function startOnboarding(userId, token) {
             currentUserId = userId; localStorage.setItem('ri_user_id', currentUserId); localStorage.setItem('ri_token', token);
             document.getElementById('authPanel').classList.add('hidden'); document.getElementById('onboardingLayer').classList.add('active'); nextStep(1); 
+            hideLoader();
         }
 
         async function finishOnboarding() {
@@ -559,7 +575,13 @@
             }
         });
 
-        function initApp() { document.getElementById('authPanel').classList.add('hidden'); document.getElementById('topNav').classList.remove('hidden'); switchTab('dashboard'); loadCvData(); }
+        function initApp() { 
+            document.getElementById('authPanel').classList.add('hidden'); 
+            document.getElementById('topNav').classList.remove('hidden'); 
+            switchTab('dashboard'); 
+            loadCvData(); 
+            hideLoader(); 
+        }
 
         async function loadCvData() {
             if(!currentUserId) return;
@@ -730,7 +752,7 @@
         async function saveJournal() { let t = document.getElementById('journalInput').value.trim(); if(!t) return; let res = await fetch(`/api/journal/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({entry_text: t}) }); if(res.ok) { document.getElementById('journalInput').value = ''; loadJournal(); } }
         async function runCoupleAnalysis() { if(!currentUserId) return; document.getElementById('coupleReportResult').classList.remove('hidden'); let p = { finance: document.getElementById('cp_finance').value, child: document.getElementById('cp_child').value, communication: document.getElementById('cp_communication').value }; let res = await fetch(`/api/couple_match/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({partner_cv: p}) }); if(res.ok) { let d = await res.json(); document.getElementById('coupleReportText').innerText = d.nova_report; } }
 
-        // 🚨 GÜNCELLENMİŞ DOMContentLoaded (FOUC ÇÖZÜMÜ) 🚨
+        // 🚨 GÜNCELLENDİ: Loader Zamanlama Hatası Çözüldü 🚨
         window.addEventListener('DOMContentLoaded', async () => { 
             if(currentUserId && localStorage.getItem('ri_token')) {
                 try {
@@ -743,7 +765,8 @@
                             initApp();
                         }
                     } else { 
-                        logout(); 
+                        logout();
+                        hideLoader();
                     }
                 } catch(e) { 
                     initApp(); 
@@ -752,14 +775,8 @@
                 currentUserId = null; 
                 document.getElementById('authPanel').classList.remove('hidden'); 
                 document.getElementById('topNav').classList.add('hidden'); 
+                hideLoader();
             } 
-            
-            // 🚨 Yükleme Ekranını Yavaşça Kaldır (Nova Görsel Efekti) 🚨
-            setTimeout(() => {
-                let loader = document.getElementById('startupLoader');
-                loader.style.opacity = '0';
-                setTimeout(() => loader.classList.add('hidden'), 500);
-            }, 300);
         });
     </script>
 </body>

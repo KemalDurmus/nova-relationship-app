@@ -364,7 +364,7 @@ def handle_coaching(user_id):
         if groq_client:
             try:
                 completion = groq_client.chat.completions.create(
-                    model="llama3-70b-8192", 
+                    model="llama-3.1-70b-versatile",
                     messages=[
                         {
                             "role": "system", 
