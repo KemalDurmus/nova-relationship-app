@@ -218,7 +218,6 @@ def delete_date(date_id):
     
     return jsonify({"message": "Aday laboratuvardan silindi."})
 
-# 🚨 RADAR GRAFİĞİ VERİLERİNİ HESAPLAYAN YENİ ANALİZ FONKSİYONU 🚨
 @app.route('/api/dates/analysis/<user_id>/<date_id>', methods=['GET'])
 @jwt_required()
 def analyze_date(user_id, date_id):
@@ -242,10 +241,9 @@ def analyze_date(user_id, date_id):
     cons = []
     critical_conflicts = []
     
-    # Grafiğe gönderilecek ham sayısal verileri tutacağımız nesneler
     chart_labels = ["Mizah", "Finans", "Çocuk", "İletişim", "Alışkanlık"]
-    user_chart_data = [50, 50, 50, 50, 50]  # Varsayılan önem dereceleri (CV Ağırlıkları)
-    date_chart_data = [50, 50, 50, 50, 50]  # Varsayılan adayın performans puanları
+    user_chart_data = [50, 50, 50, 50, 50]
+    date_chart_data = [50, 50, 50, 50, 50]
     
     key_names = {
         'humor': 'Mizah Anlayışı',
@@ -270,10 +268,8 @@ def analyze_date(user_id, date_id):
             readable_key = key_names.get(key, key)
             idx = key_indices.get(key)
             
-            # Kullanıcının bu kritere verdiği ağırlık değerini (takıntı oranını) grafiğe set ediyoruz
             user_chart_data[idx] = cv.importance
             
-            # Adayın bu kriterdeki eşleşme skorunu sayısal puana döküyoruz
             match_rate = 0.0
             if expected_val == actual_val or expected_val in ["Farketmez", "Önemli Değil", "Sorun Değil"]:
                 match_rate = 1.0
@@ -289,8 +285,6 @@ def analyze_date(user_id, date_id):
                 else:
                     cons.append(msg)
             
-            # Adayın performansı = (Ağırlık * Eşleşme Oranı) şeklinde hesaplanır
-            # Kırmızı çizgi ihlali varsa sıfırlanır
             if cv.is_red_flag and match_rate == 0.0:
                 date_chart_data[idx] = 0
             else:
@@ -306,10 +300,9 @@ def analyze_date(user_id, date_id):
     else:
         nova_msg += "Uyum seviyesi tehlikeli derecede düşük. Beklentilerinle ciddi oranda çelişiyor, çok dikkatli ol."
 
-    # Nova'nın grafiğin eğriliğine göre yapacağı iğneleyici özel yorum
     out_of_bounds_count = sum(1 for i in range(5) if date_chart_data[i] < (user_chart_data[i] * 0.3))
     if out_of_bounds_count >= 2:
-        nova_msg += " Ayrıca grafikteki şu yamukluğa bir bak... Eğriler hayatın gibi tamamen kontrolden çıkmış durumda! 📉🙄"
+        nova_msg += " Ayrıca grafikteki uyumsuzluklara dikkat ettin mi? Beklentilerin ve gerçekler biraz fazla zıt kutuplarda kalmış, belki de standartlarından taviz vermemelisin! 📉🤔"
 
     return jsonify({
         "final_score": profile.score,
@@ -344,7 +337,6 @@ def handle_journal(user_id):
         db.close()
         return jsonify(result)
 
-# GERÇEK YAPAY ZEKA (GROQ + LLAMA3) KOÇLUK MERKEZİ
 @app.route('/api/coaching/<user_id>', methods=['GET', 'POST'])
 @jwt_required()
 def handle_coaching(user_id):
@@ -359,16 +351,16 @@ def handle_coaching(user_id):
         db.add(user_msg)
         db.commit()
         
-        bot_text = "Nova: Gözlem yeteneklerimi (API) kaybettim, şu an sana laf sokamıyorum. Lütfen sistem yöneticisine API Key'ini kontrol etmesini söyle. 🙄"
+        bot_text = "Nova: Gözlem yeteneklerimi (API) kaybettim, şu an o zekice analizlerimi yapamıyorum. Lütfen sistem yöneticisine API Key'ini kontrol etmesini söyle. 😅"
         
         if groq_client:
             try:
                 completion = groq_client.chat.completions.create(
-                    model="openai/gpt-oss-120b",
+                    model="openai/gpt-oss-120b", 
                     messages=[
                         {
                             "role": "system", 
-                            "content": "Senin adın Nova. Sen acımasız, iğneleyici, aşka inanmayan, istatistiklere tapan ve laf sokan bir ilişki koçusun. Karşındaki kişi sana dert yanıyor veya tavsiye soruyor. Ona asla acıma, doğruları yüzüne tokat gibi çarp. Toksik ilişkilerden ve düşük standartlardan nefret ediyorsun. Cevapların çok uzun olmasın (maksimum 2-3 kısa paragraf). Bol bol 💅, 🚩, 🗑️, 🧠, 🙄 gibi emojiler kullan. Asla kibar bir yapay zeka asistanı gibi davranma."
+                            "content": "Senin adın Nova. Sen zeki, eğlenceli, analitik düşünen ve verilerle konuşmayı seven modern bir ilişki koçusun. İnsanlara pembe yalanlar söylemezsin; dürüst, mantıklı ama aynı zamanda tatlı-sert ve esprili bir dille tavsiyeler verirsin. Amacın insanları toksik döngülerden kurtarıp, kendi değerlerini fark etmelerini sağlamak. Mizahın zekice, ölçülü ve herkesin yüzünde tebessüm bırakacak kalitede olsun. Asla aşağılayıcı veya kaba olma. Cevapların çok uzun olmasın (maksimum 2-3 kısa paragraf). 💅, 🧠, 🎯, ✨, ☕ gibi emojileri stratejik kullan."
                         },
                         {
                             "role": "user", 
@@ -380,7 +372,7 @@ def handle_coaching(user_id):
                 )
                 bot_text = "Nova: " + completion.choices[0].message.content
             except Exception as e:
-                bot_text = f"Nova: Beyin devrelerimde bir hata oluştu ve şu an sana analiz yapamıyorum. Hata Kodu: {str(e)} 🛠️"
+                bot_text = f"Nova: Beyin devrelerimde ufak bir karışıklık oldu, şu an analiz yapamıyorum. Hata Kodu: {str(e)} 🛠️"
         
         nova_msg = NovaCoachingLog(user_id=user_id, message=bot_text, sender='nova')
         db.add(nova_msg)
@@ -405,16 +397,16 @@ def get_trends(user_id):
     total = len(profiles)
     
     if total == 0:
-        insight = "Laboratuvarda henüz in cin top oynuyor... Hiçbir denek verisi bulamadığım için sana laf bile sokamıyorum! Sistemdeki algoritmalarım paslanmadan önce hemen sağ üstten birilerini ekle de, şöyle detaylı bir analiz yapıp hep beraber o kişileri biraz kınayalım! 🕸️🧐"
+        insight = "Laboratuvarda henüz in cin top oynuyor... Hiçbir denek verisi bulamadığım için o muhteşem istatistiksel analizlerimi yapamıyorum! Hemen sağ üstten birilerini ekle de yeteneklerimi sergileyeyim! 🕸️🧐"
     else:
         avg_score = sum(p.score for p in profiles) / total
         
         if avg_score >= 75:
-            insight = f"İnanılmaz bir istatistik! Havuzundaki toplam {total} adayın genel not ortalaması tam olarak %{int(avg_score)}. Açıkçası zor beğenen algoritmalarım bile bu muazzam sonuca şaşırdı. Helal olsun sana! Standartların gerçekten çok yüksek ve hayatına sadece senin kalitende, beklentilerini karşılayabilecek insanları alıyorsun. Kırmızı çizgilerini harika bir şekilde koruyorsun. Bu gidişle o kusursuz %100 eşleşmeyi yakalaman sadece an meselesi. Aynen böyle dik durmaya devam et, laboratuvar senin bu üstün performansınla gurur duyuyor! 🥂😎✨"
+            insight = f"İnanılmaz bir istatistik! Havuzundaki toplam {total} adayın genel not ortalaması tam olarak %{int(avg_score)}. Algoritmalarım bile bu muazzam sonuca şaşırdı. Standartlarının net olması ve hayatına sadece sana uyan insanları alman gerçekten takdire şayan. Kırmızı çizgilerini harika koruyorsun. Böyle devam et, laboratuvar seninle gurur duyuyor! 🥂😎✨"
         elif avg_score >= 50:
-            insight = f"Sistemdeki verileri taradığımda havuzundaki {total} adayın ortalamasının %{int(avg_score)} olduğunu görüyorum. Ne desem bilemedim... Tamamen ortalama, sıradan ve 'güvenli ama fena halde sıkıcı' sularda yüzüyoruz. Ne tam bir felaket diyebileceğimiz bir facia var ortada, ne de heyecandan ekranımı parlatacak o 'İşte bu!' dedirten efsanevi profil. Standartlarını biraz daha mı netleştirsen acaba? Yoksa böyle sadece 'idare eder' puanlı profillerle veri havuzunu doldurmaya ve zaman kaybetmeye devam mı edeceksin? Daha acımasız ve seçici olma vakti çoktan geldi de geçiyor! 🤷‍♂️📊"
+            insight = f"Sistemdeki verileri taradığımda havuzundaki {total} adayın ortalamasının %{int(avg_score)} olduğunu görüyorum. Tamamen güvenli ama biraz sıradan sularda yüzüyoruz. Ne büyük bir kriz var, ne de 'İşte bu!' dedirten mükemmel bir uyum. Biraz daha seçici olmaya ne dersin? Standartlarını daha da netleştirip sadece senin enerjine uyan kişilere odaklanma vakti gelmiş olabilir! 🤷‍♂️📊"
         else:
-            insight = f"Sistem alarm veriyor! Havuzundaki {total} adayın ortalaması maalesef felaket bir seviyede: %{int(avg_score)}. Gerçekten inanılmaz... Usta sen dışarıda nerede senin kırmızı çizgilerini ihlal eden, toksik, sorunlu ve sana tamamen zıt (Red Flag) insan varsa hepsini bir mıknatıs gibi hayatına çekmişsin! Şımarık egoistlerden tut, iletişim fukaralarına kadar hepsi burada. Veritabanım bu düşük eşleşmeleri analiz ederken adeta acı çekiyor. Acil olarak hayatındaki bu taktiği değiştirmemiz ve senin o içindeki 'belki onu düzeltirim' kompleksinden kurtulman lazım. Yoksa bu gidişle laboratuvardan sağ çıkamayacağız. Acilen kendine gel ve çöp sepetini kullanmaya başla! 🚩😅📉"
+            insight = f"Sistem alarm veriyor! Havuzundaki {total} adayın ortalaması maalesef düşük bir seviyede: %{int(avg_score)}. Sanırım içindeki 'belki onu düzeltirim' kahramanına biraz fazla güveniyorsun! Uyumsuzluklar ortadayken şans vermek yerine, kendi değerinin farkına varmalısın. Çöp sepeti butonunu kullanmaktan çekinme, daha iyisini hak ettiğini unutma! 🚩😅📉"
 
     db.close()
     
@@ -434,23 +426,23 @@ def couple_match(user_id):
     data = request.json
     partner_cv = data.get('partner_cv')
     
-    db = SessionLocal()
-    user_cv_records = db.query(RelationshipCV).filter(RelationshipCV.user_id == user_id).all()
-    db.close()
-    
-    user_cv_dict = {
-        record.criteria_key: {
-            "expected": record.expected_value,
-            "importance": record.importance,
-            "is_red_flag": record.is_red_flag
-        } for record in user_cv_records
-    }
-    
+    report = "Yapay zeka servisi şu an kullanılamıyor veya dosya bulunamadı. Lütfen daha sonra tekrar deneyin. 🙄"
     try:
         from ai_service import generate_couple_report
+        db = SessionLocal()
+        user_cv_records = db.query(RelationshipCV).filter(RelationshipCV.user_id == user_id).all()
+        db.close()
+        
+        user_cv_dict = {
+            record.criteria_key: {
+                "expected": record.expected_value,
+                "importance": record.importance,
+                "is_red_flag": record.is_red_flag
+            } for record in user_cv_records
+        }
         report = generate_couple_report(str(user_cv_dict), str(partner_cv))
-    except ImportError:
-        report = "Yapay zeka servisi şu an kullanılamıyor. Lütfen daha sonra tekrar deneyin."
+    except Exception as e:
+        pass
     
     return jsonify({"nova_report": report})
 
