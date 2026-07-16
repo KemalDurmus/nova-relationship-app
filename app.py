@@ -47,7 +47,8 @@ def register():
         id=str(uuid.uuid4()),
         email=data.get('email'),
         password_hash=guvenli_sifre,
-        display_name=data.get('display_name')
+        display_name=data.get('display_name'),
+        is_premium=False # Varsayılan olarak herkes fakir başlar
     )
     db.add(new_user)
     db.commit()
@@ -68,7 +69,8 @@ def login():
         return jsonify({
             "message": "Giriş başarılı", 
             "user_id": user.id, 
-            "token": access_token
+            "token": access_token,
+            "is_premium": user.is_premium # Arayüze Premium bilgisini de yolluyoruz
         })
         
     return jsonify({"error": "E-posta veya şifre hatalı."}), 401
@@ -146,7 +148,7 @@ def calculate_match_score(user_cv_records, date_attributes):
     return max(0, min(100, final_score))
 
 
-# --- DATE (ADAY) YÖNETİMİ API ---
+# --- DATE (ADAY) YÖNETİMİ VE PAYWALL API ---
 @app.route('/api/dates', methods=['POST'])
 @jwt_required()
 def add_date():
@@ -157,6 +159,15 @@ def add_date():
         return jsonify({"error": "Yetkisiz erişim."}), 403
 
     db = SessionLocal()
+    
+    # 🚨 ÖDEME DUVARI (PAYWALL) KONTROLÜ 🚨
+    user = db.query(User).filter_by(id=user_id).first()
+    if not user.is_premium:
+        current_date_count = db.query(DateProfile).filter_by(user_id=user_id).count()
+        if current_date_count >= 3:
+            db.close()
+            # Kullanıcı 3 sınırını aştıysa hata kodu fırlatıyoruz (Frontend bunu yakalayıp modal açacak)
+            return jsonify({"error": "PREMIUM_REQUIRED", "message": "Ücretsiz sürüm sınırına ulaştın. Daha fazla toksik insan eklemek için Premium'a geç!"}), 403
     
     user_cv = db.query(RelationshipCV).filter_by(user_id=user_id).all()
     attrs = data.get('attributes', {})
@@ -316,7 +327,7 @@ def analyze_date(user_id, date_id):
     })
 
 
-# --- GÜNLÜK, KOÇLUK VE TRENDLER API ---
+# --- GÜNLÜK VE KOÇLUK API ---
 @app.route('/api/journal/<user_id>', methods=['GET', 'POST'])
 @jwt_required()
 def handle_journal(user_id):
@@ -324,6 +335,7 @@ def handle_journal(user_id):
         return jsonify({"error": "Yetkisiz erişim."}), 403
 
     db = SessionLocal()
+    
     if request.method == 'POST':
         text = request.json.get('entry_text')
         new_entry = RelationshipJournal(user_id=user_id, entry_text=text)
@@ -416,12 +428,20 @@ def get_trends(user_id):
     })
 
 
-# --- ÇİFT (COUPLE) ANALİZ API ---
+# --- ÇİFT (COUPLE) ANALİZ API (PREMIUM KİLİTLİ) ---
 @app.route('/api/couple_match/<user_id>', methods=['POST'])
 @jwt_required()
 def couple_match(user_id):
     if get_jwt_identity() != user_id:
         return jsonify({"error": "Yetkisiz erişim."}), 403
+        
+    db = SessionLocal()
+    
+    # 🚨 ÖDEME DUVARI (PAYWALL) KONTROLÜ 🚨
+    user = db.query(User).filter_by(id=user_id).first()
+    if not user.is_premium:
+        db.close()
+        return jsonify({"error": "PREMIUM_REQUIRED", "nova_report": "Çift Çarpıştırma özelliği sadece Premium üyelere özeldir. Cüzdanını açmadan hayatının aşkını test edemezsin tatlım! 💎💅"}), 403
 
     data = request.json
     partner_cv = data.get('partner_cv')
@@ -429,7 +449,6 @@ def couple_match(user_id):
     report = "Yapay zeka servisi şu an kullanılamıyor veya dosya bulunamadı. Lütfen daha sonra tekrar deneyin. 🙄"
     try:
         from ai_service import generate_couple_report
-        db = SessionLocal()
         user_cv_records = db.query(RelationshipCV).filter(RelationshipCV.user_id == user_id).all()
         db.close()
         
@@ -442,10 +461,29 @@ def couple_match(user_id):
         }
         report = generate_couple_report(str(user_cv_dict), str(partner_cv))
     except Exception as e:
+        db.close()
         pass
     
     return jsonify({"nova_report": report})
 
+# --- REVENUECAT WEBHOOK TASLAĞI ---
+@app.route('/api/webhook/revenuecat', methods=['POST'])
+def revenuecat_webhook():
+    # RevenueCat'ten gelen ödeme başarılı sinyallerini burada yakalayacağız.
+    data = request.json
+    
+    # Örnek mantık: (Daha sonra gerçek RevenueCat event'leriyle doldurulacak)
+    # event_type = data.get('event', {}).get('type')
+    # if event_type == 'INITIAL_PURCHASE' or event_type == 'RENEWAL':
+    #     user_id = data.get('event', {}).get('app_user_id')
+    #     db = SessionLocal()
+    #     user = db.query(User).filter_by(id=user_id).first()
+    #     if user:
+    #         user.is_premium = True
+    #         db.commit()
+    #     db.close()
+        
+    return jsonify({"status": "received"}), 200
 
 if __name__ == '__main__':
     is_dev = os.getenv("FLASK_ENV") == "development"

@@ -10,6 +10,9 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password_hash = Column(String)
     display_name = Column(String)
+    
+    is_premium = Column(Boolean, default=False)
+    subscription_end_date = Column(DateTime, nullable=True)
 
 class RelationshipCV(Base):
     __tablename__ = "relationship_cv"
