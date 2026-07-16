@@ -127,7 +127,7 @@
             display: flex; justify-content: center; align-items: center;
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             width: 100%; max-width: 700px; margin-left: auto; margin-right: auto;
-            position: relative; height: 350px; /* GRAFİĞİN ÇÖKMEMESİ İÇİN ALAN */
+            position: relative; height: 350px;
         }
 
         .report-section { background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; margin-bottom: 15px; text-align: left; }
@@ -208,6 +208,25 @@
     <div id="startupLoader">
         <h1 style="font-size: 40px; font-weight: 900; color: var(--accent-gold); letter-spacing: 4px; text-shadow: 0 0 20px rgba(255,211,42,0.6); animation: glowPulse 1.5s infinite alternate;">NOVA</h1>
         <p style="color:var(--text-muted); font-size:12px; letter-spacing:2px; margin-top:10px;">SİSTEM BAŞLATILIYOR...</p>
+    </div>
+
+    <!-- 🚨 YENİ: PREMIUM PAYWALL MODALI 🚨 -->
+    <div id="premiumModalLayer" class="custom-alert-layer">
+        <div class="custom-alert-box glass-panel" style="border: 1px solid var(--premium); max-width: 420px; box-shadow: 0 10px 50px rgba(155, 89, 182, 0.4);">
+            <div style="font-size: 50px; margin-bottom: 10px; animation: premiumPulse 2s infinite alternate;">💎</div>
+            <h2 style="color: var(--premium); font-weight: 900; margin-bottom: 15px; font-size: 24px; letter-spacing: 1px;">Nova Premium</h2>
+            <p style="font-size: 13px; color: var(--text-main); margin-bottom: 25px; line-height: 1.6;">
+                Ücretsiz sürümdeki 3 adaylık fakir kotanı doldurdun veya kilitli bir alana girmeye çalışıyorsun. Hayatına daha fazla toksik insan alıp algoritmalarımı yormak istiyorsan, pamuk eller cebe! 💅
+            </p>
+            <div style="text-align: left; margin-bottom: 25px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <div class="report-list-item flag-green" style="color: var(--text-main);">Sınırsız Kurban (Aday) Ekleme</div>
+                <div class="report-list-item flag-green" style="color: var(--text-main);">Çift Çarpıştırma Simülatörü</div>
+                <div class="report-list-item flag-green" style="color: var(--text-main);">Detaylı Green/Red Flag Analizleri</div>
+                <div class="report-list-item flag-green" style="color: var(--text-main);">Utanç Tablosunu PDF Olarak İndirme</div>
+            </div>
+            <button class="btn-master btn-premium" onclick="fakePremiumPurchase()">Aylık 199 TL - Hemen Yükselt</button>
+            <button class="nav-btn" style="width: 100%; margin-top: 12px; border-color: transparent; background: transparent; color: var(--text-muted);" onclick="closePremiumModal()">Vazgeç, Fakir Kalacağım</button>
+        </div>
     </div>
 
     <div id="globalCustomModal" class="custom-alert-layer">
@@ -306,14 +325,12 @@
                     </div>
                     <button type="submit" class="btn-master">Laboratuvara Gir</button>
                     
-                    <!-- 🚨 YENİ: Alt kısımdaki düzeltilmiş yönlendirme butonları 🚨 -->
                     <div style="margin-top: 15px; font-size: 12px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
                         <span>Yabancı mısın? <a href="#" onclick="toggleForms('register')" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">Kayıt Ol</a></span>
                         <a href="#" onclick="toggleForms('forgot')" style="color: var(--alert); text-decoration: none; font-weight: bold;">Şifremi Unuttum</a>
                     </div>
                 </form>
 
-                <!-- 🚨 YENİ: Şifremi Unuttum Gerçek Formu 🚨 -->
                 <form id="forgotPasswordForm" class="hidden">
                     <h3 style="color: var(--alert); margin-bottom: 15px; font-size: 16px;">Hafıza Kaybı Merkezi 🧠</h3>
                     <div class="form-group"><label>Kayıtlı E-postan</label><input type="email" id="forgotEmail" placeholder="Mailini gir de kurtaralım..." required></div>
@@ -420,7 +437,20 @@
         </div>
         
         <div id="trendsPanel" class="main-content hidden"><h2>Zalim Gerçekler (Trendler)</h2><div class="panel glass-panel" style="text-align:left;"><p>Toplam Denek: <span id="trend_total" style="font-weight:bold; color:white;">0</span> Aday</p><div class="criteria-card" style="margin-top:15px;"><h4>Nova'nın Yüzüne Vurdukları</h4><p id="trend_macro_text" style="font-size:13px; color:var(--text-main); margin-top:5px; line-height:1.5;"></p></div></div></div>
-        <div id="couplePanel" class="main-content hidden"><h2>Çift Çarpıştırma <span style="font-size:10px; color:var(--premium);">💎 Premium</span></h2><div class="panel glass-panel" style="text-align:left;"><div class="form-group"><label>Onun Finansal Kafası</label><select id="cp_finance"><option value="Birikim Odaklı">Cimri</option><option value="Dengeli">Orta Yollu</option><option value="Savurgan">Para Yenmek İçindir</option></select></div><div class="form-group"><label>Onun Çocuk İsteği</label><select id="cp_child"><option value="İstiyor">Kesin İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Zaman Gösterir</option></select></div><div class="form-group"><label>Onun Darlama Seviyesi</label><select id="cp_communication"><option value="Sık Görüşme">Yapışık</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Görüldücü</option></select></div><button class="btn-master btn-premium" onclick="runCoupleAnalysis()">Simülasyonu Başlat</button></div><div id="coupleReportResult" class="panel glass-panel hidden" style="margin-top:15px; border-color:var(--premium); text-align:left;"><h4 style="color:var(--premium);">Acı Teşhis</h4><p id="coupleReportText" style="font-size:13px; line-height:1.5; color:white; margin-top:5px;"></p></div></div>
+        
+        <div id="couplePanel" class="main-content hidden">
+            <h2>Çift Çarpıştırma <span style="font-size:10px; color:var(--premium);">💎 Premium</span></h2>
+            <div class="panel glass-panel" style="text-align:left;">
+                <div class="form-group"><label>Onun Finansal Kafası</label><select id="cp_finance"><option value="Birikim Odaklı">Cimri</option><option value="Dengeli">Orta Yollu</option><option value="Savurgan">Para Yenmek İçindir</option></select></div>
+                <div class="form-group"><label>Onun Çocuk İsteği</label><select id="cp_child"><option value="İstiyor">Kesin İstiyor</option><option value="İstemiyor">İstemiyor</option><option value="Kararsız">Zaman Gösterir</option></select></div>
+                <div class="form-group"><label>Onun Darlama Seviyesi</label><select id="cp_communication"><option value="Sık Görüşme">Yapışık</option><option value="Dengeli">Dengeli</option><option value="Mesafeli">Görüldücü</option></select></div>
+                <button class="btn-master btn-premium" onclick="runCoupleAnalysis()">Simülasyonu Başlat</button>
+            </div>
+            <div id="coupleReportResult" class="panel glass-panel hidden" style="margin-top:15px; border-color:var(--premium); text-align:left;">
+                <h4 style="color:var(--premium);">Acı Teşhis</h4>
+                <p id="coupleReportText" style="font-size:13px; line-height:1.5; color:white; margin-top:5px;"></p>
+            </div>
+        </div>
     </div>
 
     <div id="analysisReportLayer">
@@ -439,7 +469,7 @@
         <div class="report-section glass-panel"><h4 style="color:var(--success);">✅ Şaşırttı (Green Flags)</h4><div id="repProsList"></div></div>
         <div class="report-section glass-panel"><h4 style="color:var(--text-muted);">⚠️ Sıkıntı Çıkaracaklar (Eksiler)</h4><div id="repConsList"></div></div>
         
-        <button class="btn-master btn-premium" onclick="customAlert('Bu kurbanın tüm dedikodu ve grafiklerini PDF olarak indirmek Premium bir ayrıcalıktır şekerim.', '💎 Fakir Misin?', '💅')">📄 Utanç Tablosunu PDF İndir 💎</button>
+        <button class="btn-master btn-premium" onclick="showPremiumModal()">📄 Utanç Tablosunu PDF İndir 💎</button>
     </div>
 
     <script>
@@ -509,13 +539,24 @@
             document.getElementById('topNav').classList.add('hidden');
             ['cv', 'dashboard', 'trends', 'coach', 'journal', 'couple'].forEach(t => document.getElementById(`${t}Panel`).classList.add('hidden'));
             
-            // Çıkış yaparken formları temizle
             document.getElementById('loginForm').reset();
             document.getElementById('registerForm').reset();
             document.getElementById('forgotPasswordForm').reset();
             toggleForms('login');
             
             document.getElementById('authPanel').classList.remove('hidden');
+        }
+
+        // 🚨 YENİ: PREMIUM MODAL YÖNETİMİ 🚨
+        function showPremiumModal() {
+            document.getElementById('premiumModalLayer').classList.add('active');
+        }
+        function closePremiumModal() {
+            document.getElementById('premiumModalLayer').classList.remove('active');
+        }
+        function fakePremiumPurchase() {
+            customAlert("Gerçek cüzdan entegrasyonu (RevenueCat) gelene kadar kredi kartın güvende! 💸", "Sanal Satın Alım", "💳");
+            closePremiumModal();
         }
 
         ['humor', 'finance', 'child', 'communication', 'habit'].forEach(key => {
@@ -539,7 +580,6 @@
 
         function toggleAddDateForm() { document.getElementById('addDateBox').classList.toggle('hidden'); }
         
-        // 🚨 YENİ: Form geçişlerini yöneten dinamik fonksiyon 🚨
         function toggleForms(target) { 
             document.getElementById('loginForm').classList.add('hidden'); 
             document.getElementById('registerForm').classList.add('hidden'); 
@@ -554,7 +594,6 @@
             }
         }
 
-        // 🚨 YENİ: Yalandan şifre sıfırlama işlemi 🚨
         function fakeResetPassword() {
             let email = document.getElementById('forgotEmail').value;
             if(!email) {
@@ -640,12 +679,26 @@
             customAlert("Zorlu standartların başarıyla kaydedildi. Allah karşına çıkacaklara yardım etsin.", "Standartlar Güncellendi", "💅");
         });
 
+        // 🚨 YENİ: ADAY EKLERKEN 403 PREMIUM_REQUIRED KONTROLÜ 🚨
         document.getElementById('addDateForm').addEventListener('submit', async (e) => {
             e.preventDefault(); let attrs = {};
             ['humor', 'finance', 'child', 'communication', 'habit'].forEach(key => { attrs[key] = document.getElementById(`attr_${key}`).value; });
             let payload = { user_id: currentUserId, name: document.getElementById('d_name').value, job_or_education: document.getElementById('d_job').value, notes: document.getElementById('d_notes').value, attributes: attrs };
+            
             let res = await fetch('/api/dates', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
-            if(res.ok) { document.getElementById('addDateForm').reset(); toggleAddDateForm(); loadDates(); }
+            
+            if(res.ok) { 
+                document.getElementById('addDateForm').reset(); 
+                toggleAddDateForm(); 
+                loadDates(); 
+            } else if (res.status === 403) {
+                let errorData = await res.json();
+                if(errorData.error === "PREMIUM_REQUIRED") {
+                    showPremiumModal();
+                } else {
+                    customAlert(errorData.error || "Yetkisiz işlem.", "Hata", "🚫");
+                }
+            }
         });
 
         async function loadDates() {
@@ -787,7 +840,27 @@
         async function sendCoachingMsg() { let i = document.getElementById('coachInput'); let m = i.value.trim(); if(!m) return; i.value = ''; document.getElementById('coachingChatBox').innerHTML += `<div class="chat-msg chat-user">${m}</div>`; let res = await fetch(`/api/coaching/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({message: m}) }); if(res.ok) setTimeout(loadCoachingHistory, 500); }
         async function loadJournal() { let res = await fetch(`/api/journal/${currentUserId}`, { headers: getAuthHeaders() }); if(res.ok) { let d = await res.json(); let l = document.getElementById('journalList'); l.innerHTML = ''; d.forEach(e => { l.innerHTML += `<div class="criteria-card"><div style="font-size:10px; color:var(--text-muted);">${e.timestamp}</div><div>${e.entry_text}</div></div>`; }); } }
         async function saveJournal() { let t = document.getElementById('journalInput').value.trim(); if(!t) return; let res = await fetch(`/api/journal/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({entry_text: t}) }); if(res.ok) { document.getElementById('journalInput').value = ''; loadJournal(); } }
-        async function runCoupleAnalysis() { if(!currentUserId) return; document.getElementById('coupleReportResult').classList.remove('hidden'); let p = { finance: document.getElementById('cp_finance').value, child: document.getElementById('cp_child').value, communication: document.getElementById('cp_communication').value }; let res = await fetch(`/api/couple_match/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({partner_cv: p}) }); if(res.ok) { let d = await res.json(); document.getElementById('coupleReportText').innerText = d.nova_report; } }
+        
+        // 🚨 YENİ: ÇİFT ÇARPIŞTIRMA 403 PREMIUM_REQUIRED KONTROLÜ 🚨
+        async function runCoupleAnalysis() { 
+            if(!currentUserId) return; 
+            
+            let p = { finance: document.getElementById('cp_finance').value, child: document.getElementById('cp_child').value, communication: document.getElementById('cp_communication').value }; 
+            let res = await fetch(`/api/couple_match/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({partner_cv: p}) }); 
+            
+            if(res.ok) { 
+                document.getElementById('coupleReportResult').classList.remove('hidden'); 
+                let d = await res.json(); 
+                document.getElementById('coupleReportText').innerText = d.nova_report; 
+            } else if (res.status === 403) {
+                let errorData = await res.json();
+                if(errorData.error === "PREMIUM_REQUIRED") {
+                    showPremiumModal();
+                } else {
+                    customAlert("Yetkisiz işlem.", "Hata", "🚫");
+                }
+            }
+        }
 
         window.addEventListener('DOMContentLoaded', async () => { 
             if(currentUserId && localStorage.getItem('ri_token')) {
