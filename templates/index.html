@@ -127,6 +127,7 @@
             display: flex; justify-content: center; align-items: center;
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             width: 100%; max-width: 700px; margin-left: auto; margin-right: auto;
+            position: relative; height: 350px; /* GRAFİĞİN ÇÖKMEMESİ İÇİN ALAN */
         }
 
         .report-section { background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; margin-bottom: 15px; text-align: left; }
@@ -300,15 +301,25 @@
                 <form id="loginForm">
                     <div class="form-group"><label>Gizli Ajan E-postası</label><input type="email" id="logEmail" placeholder="senin@mailin.com" required></div>
                     <div class="form-group">
-                        <label style="display: flex; justify-content: space-between; align-items: center;">
-                            Şifre 
-                            <a href="#" onclick="forgotPasswordAlert(event)" style="font-size: 11px; color: var(--accent-gold); text-decoration: none; font-weight: normal; letter-spacing: 0.5px;">Şifremi Unuttum</a>
-                        </label>
+                        <label>Şifre</label>
                         <input type="password" id="logPassword" placeholder="Eski sevgilinin adını koymadın umarım..." required>
                     </div>
                     <button type="submit" class="btn-master">Laboratuvara Gir</button>
+                    
+                    <!-- 🚨 YENİ: Alt kısımdaki düzeltilmiş yönlendirme butonları 🚨 -->
+                    <div style="margin-top: 15px; font-size: 12px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
+                        <span>Yabancı mısın? <a href="#" onclick="toggleForms('register')" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">Kayıt Ol</a></span>
+                        <a href="#" onclick="toggleForms('forgot')" style="color: var(--alert); text-decoration: none; font-weight: bold;">Şifremi Unuttum</a>
+                    </div>
+                </form>
+
+                <!-- 🚨 YENİ: Şifremi Unuttum Gerçek Formu 🚨 -->
+                <form id="forgotPasswordForm" class="hidden">
+                    <h3 style="color: var(--alert); margin-bottom: 15px; font-size: 16px;">Hafıza Kaybı Merkezi 🧠</h3>
+                    <div class="form-group"><label>Kayıtlı E-postan</label><input type="email" id="forgotEmail" placeholder="Mailini gir de kurtaralım..." required></div>
+                    <button type="button" class="btn-master" style="background: linear-gradient(135deg, var(--alert), #c0392b); color: white; box-shadow: 0 4px 15px rgba(255, 71, 87, 0.2);" onclick="fakeResetPassword()">Bağlantı Gönder</button>
                     <div style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">
-                        Laboratuvara yabancı mısın? <a href="#" onclick="toggleForms()" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">Hemen Kayıt Ol</a>
+                        Hatırladın mı? <a href="#" onclick="toggleForms('login')" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">Giriş Yap</a>
                     </div>
                 </form>
 
@@ -318,7 +329,7 @@
                     <div class="form-group"><label>Şifre</label><input type="password" id="regPassword" placeholder="Güçlü bir şey seç!" required></div>
                     <button type="submit" class="btn-master">Sözleşmeyi İmzala ve Katıl</button>
                     <div style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">
-                        Zaten içeride misin? <a href="#" onclick="toggleForms()" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">Giriş Yap</a>
+                        Zaten içeride misin? <a href="#" onclick="toggleForms('login')" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">Giriş Yap</a>
                     </div>
                 </form>
             </div>
@@ -420,7 +431,7 @@
         <div class="report-score-box glass-panel"><h4>Nesnel Uyum Endeksi</h4><div class="report-score-val" id="repScore">%0</div></div>
         
         <div class="chart-section">
-            <canvas id="novaRadarChart" style="max-height: 280px;"></canvas>
+            <canvas id="novaRadarChart" style="max-height: 350px;"></canvas>
         </div>
 
         <div class="report-section glass-panel"><h4>Nova'nın İğneleyici Teşhisi</h4><p id="repNovaMessage" style="font-size:13px; color:white; line-height: 1.5;"></p></div>
@@ -435,7 +446,6 @@
         let currentUserId = localStorage.getItem('ri_user_id');
         let myRadarChart = null; 
 
-        // 🚨 Yükleme Ekranı Kapatma Fonksiyonu 🚨
         function hideLoader() {
             let loader = document.getElementById('startupLoader');
             if (loader && !loader.classList.contains('hidden')) {
@@ -490,20 +500,21 @@
             customAlert("Bu konu senin için normalde az önemli görünse bile, eğer kurbanımız seninle <strong>TAMAMEN ZIT</strong> bir cevap verirse, o acımasız <strong>-25 kırmızı çizgi tokatını</strong> yer. Acıma!", "KIRMIZI ÇİZGİ CEZASI", "🚨");
         }
 
-        function forgotPasswordAlert(e) {
-            e.preventDefault();
-            customAlert("Şifreni unutacak kadar aklın o toksik tiplerde mi kaldı?\n\nŞu an laboratuvarda otomatik şifre sıfırlama kuryelerimiz (e-posta sunucusu) aktif değil. Biraz hafızanı zorla veya tamamen temiz bir sayfa açıp yeni bir hesapla kayıt ol! 🧠💅", "Hafıza Kaybı Mı?", "🕵️‍♀️");
-        }
-
         function getAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('ri_token') }; }
         
-        // 🚨 GÜNCELLENDİ: Sayfayı yenilemeden temiz çıkış yapan fonksiyon 🚨
         function logout() { 
             localStorage.removeItem('ri_user_id'); 
             localStorage.removeItem('ri_token'); 
             currentUserId = null;
             document.getElementById('topNav').classList.add('hidden');
             ['cv', 'dashboard', 'trends', 'coach', 'journal', 'couple'].forEach(t => document.getElementById(`${t}Panel`).classList.add('hidden'));
+            
+            // Çıkış yaparken formları temizle
+            document.getElementById('loginForm').reset();
+            document.getElementById('registerForm').reset();
+            document.getElementById('forgotPasswordForm').reset();
+            toggleForms('login');
+            
             document.getElementById('authPanel').classList.remove('hidden');
         }
 
@@ -527,7 +538,33 @@
         }
 
         function toggleAddDateForm() { document.getElementById('addDateBox').classList.toggle('hidden'); }
-        function toggleForms() { document.getElementById('loginForm').classList.toggle('hidden'); document.getElementById('registerForm').classList.toggle('hidden'); }
+        
+        // 🚨 YENİ: Form geçişlerini yöneten dinamik fonksiyon 🚨
+        function toggleForms(target) { 
+            document.getElementById('loginForm').classList.add('hidden'); 
+            document.getElementById('registerForm').classList.add('hidden'); 
+            document.getElementById('forgotPasswordForm').classList.add('hidden'); 
+            
+            if(target === 'register') {
+                document.getElementById('registerForm').classList.remove('hidden');
+            } else if(target === 'forgot') {
+                document.getElementById('forgotPasswordForm').classList.remove('hidden');
+            } else {
+                document.getElementById('loginForm').classList.remove('hidden');
+            }
+        }
+
+        // 🚨 YENİ: Yalandan şifre sıfırlama işlemi 🚨
+        function fakeResetPassword() {
+            let email = document.getElementById('forgotEmail').value;
+            if(!email) {
+                customAlert("Mailini girmeden şifreni nasıl sıfırlamamı bekliyorsun? Telepatiyle mi?", "Mantık Hatası", "🙄");
+                return;
+            }
+            customAlert(`"${email}" adresine bir sıfırlama maili göndermişim gibi yapıyoruz. Şimdilik arka planda bir mail sunucumuz olmadığı için şifreni sıfırlayamam. Yeni bir hesap açıp temiz bir başlangıç yapman laboratuvar kurallarına daha uygun! 💅`, "Mail Gönderildi (Yalan)", "✉️");
+            document.getElementById('forgotPasswordForm').reset();
+            toggleForms('login');
+        }
 
         function nextStep(step) {
             document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
@@ -555,7 +592,7 @@
             let res = await fetch('/api/register', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: document.getElementById('regEmail').value, password: document.getElementById('regPassword').value, display_name: document.getElementById('regName').value})});
             if(res.ok) { 
                 await customAlert("Başarıyla içeri sızdın. Şimdi giriş yap da işimize bakalım.", "Aramıza Katıldın!", "🍸"); 
-                toggleForms(); 
+                toggleForms('login'); 
             } else { 
                 await customAlert("Beceremedik. E-posta zaten kayıtlı olabilir.", "Olamaz...", "🤦‍♀️"); 
             }
@@ -752,7 +789,6 @@
         async function saveJournal() { let t = document.getElementById('journalInput').value.trim(); if(!t) return; let res = await fetch(`/api/journal/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({entry_text: t}) }); if(res.ok) { document.getElementById('journalInput').value = ''; loadJournal(); } }
         async function runCoupleAnalysis() { if(!currentUserId) return; document.getElementById('coupleReportResult').classList.remove('hidden'); let p = { finance: document.getElementById('cp_finance').value, child: document.getElementById('cp_child').value, communication: document.getElementById('cp_communication').value }; let res = await fetch(`/api/couple_match/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({partner_cv: p}) }); if(res.ok) { let d = await res.json(); document.getElementById('coupleReportText').innerText = d.nova_report; } }
 
-        // 🚨 GÜNCELLENDİ: Loader Zamanlama Hatası Çözüldü 🚨
         window.addEventListener('DOMContentLoaded', async () => { 
             if(currentUserId && localStorage.getItem('ri_token')) {
                 try {
