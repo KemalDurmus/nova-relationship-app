@@ -11,17 +11,23 @@ from datetime import datetime
 from groq import Groq
 from sqlalchemy import text
 
-# --- VERİTABANI İNŞASI VE PAYWALL YAMASI ---
+# --- VERİTABANI İNŞASI VE OTOMATİK YAMA ---
 # Tabloları veritabanına inşa et
 Base.metadata.create_all(bind=engine)
 
-# Eksik paywall (is_premium, subscription_end_date) sütunlarını zorla ekle
+# Eksik paywall ve gamification sütunlarını zorla ekle
 try:
     with engine.connect() as conn:
+        # Paywall Sütunları
         conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_premium BOOLEAN DEFAULT FALSE;"))
         conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_end_date TIMESTAMP;"))
+        
+        # 🚨 YENİ: Gamification (Rozet) Sütunları 🚨
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS xp_points INTEGER DEFAULT 0;"))
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_dates_count INTEGER DEFAULT 0;"))
+        
         conn.commit()
-        print("💎 Paywall (Premium) sütunları veritabanında kontrol edildi/eklendi!")
+        print("💎 Veritabanı sütunları (Paywall & Gamification) başarıyla senkronize edildi!")
 except Exception as e:
     # Sütunlar zaten varsa sessizce yola devam et
     pass
