@@ -405,6 +405,22 @@
         </div>
 
         <div id="dashboardPanel" class="main-content hidden">
+            <!-- 🚨 YENİ: GAMIFICATION (ROZET VE XP) ALANI 🚨 -->
+            <div class="panel glass-panel" style="margin-bottom: 20px; text-align: left; border-color: var(--premium); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h3 style="color: var(--text-main); font-size: 16px;">Laboratuvar Seviyen</h3>
+                    <div style="font-size: 24px; font-weight: 900; color: var(--premium); text-shadow: 0 0 10px rgba(155, 89, 182, 0.5);">
+                        <span id="userXpDisplay">0</span> XP
+                    </div>
+                </div>
+                <div style="flex-grow: 1;">
+                    <h4 style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">Kazanılan Rozetler</h4>
+                    <div id="userBadgesContainer" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-size: 12px; color: var(--text-muted);">Henüz rozetin yok. Aday eklemeye başla!</span>
+                    </div>
+                </div>
+            </div>
+
             <h2>Denek Havuzu 🔬 <button class="nav-btn" style="border-color:var(--accent-gold); color:var(--accent-gold);" onclick="toggleAddDateForm()">+ Yeni Kurban Ekle</button></h2>
             
             <div id="addDateBox" class="panel glass-panel hidden" style="text-align:left; margin-bottom:20px; border-color:var(--accent-gold);">
@@ -547,7 +563,7 @@
             document.getElementById('authPanel').classList.remove('hidden');
         }
 
-        // 🚨 YENİ: PREMIUM MODAL YÖNETİMİ 🚨
+        // PREMIUM MODAL YÖNETİMİ
         function showPremiumModal() {
             document.getElementById('premiumModalLayer').classList.add('active');
         }
@@ -572,7 +588,10 @@
             document.getElementById(`${tab}Panel`).classList.remove('hidden');
             document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}Btn`).classList.add('active');
 
-            if(tab === 'dashboard') loadDates();
+            if(tab === 'dashboard') {
+                loadDates();
+                loadGamification();
+            }
             if(tab === 'trends') loadTrends();
             if(tab === 'coach') loadCoachingHistory();
             if(tab === 'journal') loadJournal();
@@ -679,7 +698,6 @@
             customAlert("Zorlu standartların başarıyla kaydedildi. Allah karşına çıkacaklara yardım etsin.", "Standartlar Güncellendi", "💅");
         });
 
-        // 🚨 YENİ: ADAY EKLERKEN 403 PREMIUM_REQUIRED KONTROLÜ 🚨
         document.getElementById('addDateForm').addEventListener('submit', async (e) => {
             e.preventDefault(); let attrs = {};
             ['humor', 'finance', 'child', 'communication', 'habit'].forEach(key => { attrs[key] = document.getElementById(`attr_${key}`).value; });
@@ -691,6 +709,7 @@
                 document.getElementById('addDateForm').reset(); 
                 toggleAddDateForm(); 
                 loadDates(); 
+                loadGamification();
             } else if (res.status === 403) {
                 let errorData = await res.json();
                 if(errorData.error === "PREMIUM_REQUIRED") {
@@ -700,6 +719,26 @@
                 }
             }
         });
+
+        // XP VE ROZETLERİ GETİREN FONKSİYON
+        async function loadGamification() {
+            if(!currentUserId) return;
+            let res = await fetch(`/api/user/gamification/${currentUserId}`, { headers: getAuthHeaders() });
+            if(res.ok) {
+                let data = await res.json();
+                document.getElementById('userXpDisplay').innerText = data.xp;
+                
+                let bContainer = document.getElementById('userBadgesContainer');
+                if(data.badges.length > 0) {
+                    bContainer.innerHTML = '';
+                    data.badges.forEach(b => {
+                        bContainer.innerHTML += `<div style="background: rgba(155, 89, 182, 0.15); border: 1px solid var(--premium); padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; color: #fff;">${b.name}</div>`;
+                    });
+                } else {
+                    bContainer.innerHTML = `<span style="font-size: 12px; color: var(--text-muted);">Henüz rozetin yok. Aday eklemeye başla!</span>`;
+                }
+            }
+        }
 
         async function loadDates() {
             if(!currentUserId) return;
@@ -733,7 +772,12 @@
             if(!onay) return;
             
             let res = await fetch(`/api/dates/${dateId}`, { method: 'DELETE', headers: getAuthHeaders() });
-            if(res.ok) { loadDates(); } else { customAlert("Bir şeyler ters gitti, sanırım sana yapıştı bırakmıyor.", "Hata", "🙄"); }
+            if(res.ok) { 
+                loadDates(); 
+                loadGamification();
+            } else { 
+                customAlert("Bir şeyler ters gitti, sanırım sana yapıştı bırakmıyor.", "Hata", "🙄"); 
+            }
         }
 
         function renderRadarChart(labels, userData, dateData) {
@@ -841,7 +885,6 @@
         async function loadJournal() { let res = await fetch(`/api/journal/${currentUserId}`, { headers: getAuthHeaders() }); if(res.ok) { let d = await res.json(); let l = document.getElementById('journalList'); l.innerHTML = ''; d.forEach(e => { l.innerHTML += `<div class="criteria-card"><div style="font-size:10px; color:var(--text-muted);">${e.timestamp}</div><div>${e.entry_text}</div></div>`; }); } }
         async function saveJournal() { let t = document.getElementById('journalInput').value.trim(); if(!t) return; let res = await fetch(`/api/journal/${currentUserId}`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({entry_text: t}) }); if(res.ok) { document.getElementById('journalInput').value = ''; loadJournal(); } }
         
-        // 🚨 YENİ: ÇİFT ÇARPIŞTIRMA 403 PREMIUM_REQUIRED KONTROLÜ 🚨
         async function runCoupleAnalysis() { 
             if(!currentUserId) return; 
             
