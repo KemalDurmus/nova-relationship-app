@@ -9,9 +9,22 @@ from models import User, RelationshipCV, DateProfile, DateAttribute, NovaCoachin
 import uuid
 from datetime import datetime
 from groq import Groq
+from sqlalchemy import text
 
+# --- VERİTABANI İNŞASI VE PAYWALL YAMASI ---
 # Tabloları veritabanına inşa et
 Base.metadata.create_all(bind=engine)
+
+# Eksik paywall (is_premium, subscription_end_date) sütunlarını zorla ekle
+try:
+    with engine.connect() as conn:
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_premium BOOLEAN DEFAULT FALSE;"))
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_end_date TIMESTAMP;"))
+        conn.commit()
+        print("💎 Paywall (Premium) sütunları veritabanında kontrol edildi/eklendi!")
+except Exception as e:
+    # Sütunlar zaten varsa sessizce yola devam et
+    pass
 
 app = Flask(__name__)
 CORS(app)
@@ -327,7 +340,7 @@ def analyze_date(user_id, date_id):
     })
 
 
-# --- GÜNLÜK VE KOÇLUK API ---
+# --- GÜNLÜK, KOÇLUK VE TRENDLER API ---
 @app.route('/api/journal/<user_id>', methods=['GET', 'POST'])
 @jwt_required()
 def handle_journal(user_id):
